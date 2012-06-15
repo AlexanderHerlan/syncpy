@@ -1,3 +1,9 @@
+"""
+PySync by Alexander Wesley Herlan (c) 2012
+Description:  Syncronize 2 folders over SSH/SFTP.  
+Great for web development testing.
+"""
+
 import os
 import sys
 import time
@@ -80,26 +86,21 @@ class FileEventHandler(FileSystemEventHandler):
 
 def agent_auth(transport, username):
 
-    try:
-        mykey = paramiko.RSAKey.from_private_key_file(private_key)
-    except Exception, e:
-        mykey = None
-        sync_logger.warning('Failed loading local authentication key.')
-
     agent = paramiko.Agent()
+    agent_keys = agent.get_keys()
 
-    if mykey != None:
-        sync_logger.info('Using local authentication key.')
-        agent_keys = agent.get_keys() + (mykey,)
+    if len(agent_keys) == 0:
+        sync_logger.warning('Failed loading ssh-agent authentication key.')
+        try:
+            mykey = None
+            mykey = paramiko.RSAKey.from_private_key_file(private_key)
+            if mykey != None:
+                sync_logger.info('Using local authentication key.')
+                agent_keys = agent.get_keys() + (mykey,)
+        except Exception, e:
+            sync_logger.warning('Failed loading local authentication key.')
     else:
-        agent_keys = agent.get_keys()
-
-        if len(agent_keys) == 0:
-            sync_logger.warning('Failed loading ssh-agent key.')
-            return
-        else:
-            sync_logger.info('Using ssh-agent authentication key.')
-         
+        sync_logger.info('Using ssh-agent authentication key.')
 
     for key in agent_keys:
         sync_logger.info('Attempting to authenticate with RSA key %s... ' % key.get_fingerprint().encode('hex'))
@@ -111,6 +112,9 @@ def agent_auth(transport, username):
         except paramiko.SSHException, e:
             sync_logger.warning('Failed!', e)
 
+"""
+Application entry point for sync.py
+"""
 if __name__ == "__main__":
     logging.basicConfig(format='%(asctime)-15s %(levelname)s %(message)s')
     sync_logger = logging.getLogger(__name__)
@@ -128,12 +132,15 @@ if __name__ == "__main__":
 
     if not transport.is_authenticated():
         sync_logger.warning('RSA key auth failed! Trying password login...')
-        transport.connect(username=username, password=password)
-        sftp = paramiko.SFTPClient.from_transport(transport)
-        sync_logger.info('Login successful.')
+        try:
+            transport.connect(username=username, password=password)
+            sftp = paramiko.SFTPClient.from_transport(transport)
+            sync_logger.info('Login successful.')
+        except paramiko.AuthenticationException:
+            sync_logger.error('Unable to authenticate.  Password missing or incorrect.')
+            sync_logger.info('Please properly configure your sync.py header info and try again.')
+            sys.exit()
     else:
-
-        
         transport.open_session()
         sftp = paramiko.SFTPClient.from_transport(transport)
 
