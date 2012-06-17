@@ -21,14 +21,14 @@ import paramiko
 -----------------------------------------------------------------------------------------------------------------------
 """
 # The local folder on your computer to watch
-local_path    = "C:\\dev\\snakebyte.net\\test\\"
+local_path    = "C:\\dev\\rolloff2"
 # The remote folder on your web server to push to
-remote_path   = "/home/orbitrix/www/snakebyte.net/test/"
+remote_path   = "/var/wwwdev"
 # Your web server's host name and port
-host          = "snakebyte.net"
+host          = "10.0.0.20"
 port          = 22
 # Your Linux (webserver ssh) username
-username      = "orbitrix"
+username      = "rocs"
 
 # You have 3 options for authentication. Please choose only one of the following:
 
@@ -88,6 +88,7 @@ def sftp_is_file(ssh, path):
         return False
 
 
+#class FileEventHandler(FileSystemEventHandler):
 class FileEventHandler(FileSystemEventHandler):
     
     def __init__(self, ssh_client):
@@ -211,7 +212,7 @@ if __name__ == "__main__":
     
     if auth_user(ssh_client, username) == True:
         sync_logger.info('Connected to ' + host)
-        event_handler = FileEventHandler(ssh_client)
+        event_handler = FileEventHandler(ssh_client=ssh_client)
         observer = Observer()
         observer.schedule(event_handler, local_path, recursive=True)
         observer.start()
