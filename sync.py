@@ -1,5 +1,5 @@
 """
-PySync by Alexander Herlan (c) 2012
+sync.py simple folder synchronizer by Alexander Herlan (c) 2012
 Description:  Automatically update files on your webserver when they are 
 created modified or deleted locally.  The remote server is kept in sync Using 
 SFTP and SSH commands. Great for automatic web development testing. Its an in-house 
@@ -111,6 +111,9 @@ class FileEventHandler(FileSystemEventHandler):
         remotepath = win_to_lin_path(event.src_path)
 
         if what == 'file':
+            # Wait some time before uploading the file because some 
+            # apps do weird stuff to files as they're being saved.
+            time.sleep(0.75) 
             self.sftp_client.put(localpath, remotepath)
 
             sync_logger.info('Created file: %s', remotepath)
@@ -139,7 +142,6 @@ class FileEventHandler(FileSystemEventHandler):
     def on_modified(self, event):
         localpath = event.src_path
         remotepath = win_to_lin_path(event.src_path)
-        sync_logger.info('Attempting to update %s...', remotepath)
 
         if sftp_is_file(self.ssh_client, remotepath):
             self.sftp_client.put(localpath, remotepath)
