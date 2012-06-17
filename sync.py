@@ -43,7 +43,7 @@ private_key   = ""
 # 3) (NOT RECOMMENDED for security reasons) You can put your SSH password associated
 #    with your username in the variable below
 #    Example: passowrd      = "LetMeIn"
-password      = ""
+password      = "s8a7i3"
 """
 -----------------------------------------------------------------------------------------------------------------------
                                     </End User Configuration Section>
@@ -164,15 +164,15 @@ def auth_user(ssh_client, username):
             local_key = None
             local_key = paramiko.RSAKey.from_private_key_file(private_key)
             if local_key != None:
-                sync_logger.info('Using local authentication key.')
+                sync_logger.info('Using local authentication key:')
                 agent_keys = agent.get_keys() + (local_key,)
         except Exception, e:
             sync_logger.warning('Failed loading local authentication key.')
     else:
-        sync_logger.info('Using ssh-agent authentication key.')
+        sync_logger.info('Using ssh-agent authentication key:')
 
     for key in agent_keys:
-        sync_logger.info('Attempting to authenticate with RSA key %s... ' % key.get_fingerprint().encode('hex'))
+        sync_logger.info('%s... ' % key.get_fingerprint().encode('hex'))
         try:
             ssh_client.connect(hostname=host, port=port, username=username, pkey=key)
             sync_logger.info('RSA Authentication successful!')
@@ -211,12 +211,12 @@ if __name__ == "__main__":
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     
     if auth_user(ssh_client, username) == True:
-        sync_logger.info('Connected to ' + host)
+        sync_logger.info('Connected to ssh://' + username + '@' + host + ':' + str(port) + remote_path)
         event_handler = FileEventHandler(ssh_client=ssh_client)
         observer = Observer()
         observer.schedule(event_handler, local_path, recursive=True)
         observer.start()
-        sync_logger.info('Watching Folder: ' + local_path)
+        sync_logger.info('Watching ' + local_path)
     else:
         sys.exit()
 
