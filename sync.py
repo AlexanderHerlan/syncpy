@@ -1,9 +1,10 @@
 """
-PySync by Alexander Wesley Herlan (c) 2012
-Description:  Syncronize 2 folders over SSH/SFTP.  
-Great for web development testing.
+sync.py simple folder synchronizer by Alexander Herlan (c) 2012
+Description:  Automatically update files on your webserver when they are 
+created modified or deleted locally.  The remote server is kept in sync Using 
+SFTP and SSH commands. Great for automatic web development testing. Its an in-house 
+way to securely replace dropbox for syncronization. 
 """
-
 import os
 import sys
 import time
@@ -13,78 +14,146 @@ from watchdog.events import LoggingEventHandler
 from watchdog.events import FileSystemEventHandler
 import paramiko
 
-
-local_path    = "C:\\dev\\snakebyte.net\\test\\"
-remote_path   = "/home/orbitrix/www/snakebyte.net/test/"
-host          = "snakebyte.net"
+"""
+-----------------------------------------------------------------------------------------------------------------------
+                                        (Do not edit above this line)
+                                        <User Configuration Section>
+-----------------------------------------------------------------------------------------------------------------------
+"""
+# The local folder on your computer to watch
+local_path    = "C:\\dev\\rolloff2"
+# The remote folder on your web server to push to
+remote_path   = "/var/wwwdev"
+# Your web server's host name and port
+host          = "10.0.0.20"
 port          = 22
-username      = "orbitrix"
-private_key   = ""
-password      = ""
+# Your Linux (webserver ssh) username
+username      = "rocs"
 
+# You have 3 options for authentication. Please choose only one of the following:
+
+# 1) If you are already running an ssh-agent (like Pageant for Putty) with your RSA
+#    key properly loaded, you can leave both of these variables with null strings.
+#    Authentication should be automatic as long as the above username is correct. 
+
+# 2) You can put the path to your OpenSSH formated RSA key in the private_key variable below
+#    Example: private_key   = "C:\Users\Orbitrix\Documents\paramiko-private-key.ppk"
+private_key   = ""
+
+# 3) (NOT RECOMMENDED for security reasons) You can put your SSH password associated
+#    with your username in the variable below
+#    Example: passowrd      = "LetMeIn"
+password      = "s8a7i3"
+"""
+-----------------------------------------------------------------------------------------------------------------------
+                                    </End User Configuration Section>
+                                     (Do not edit below this line)
+-----------------------------------------------------------------------------------------------------------------------
+"""
 
 def win_to_lin_path(file_or_directory):
-
+    
     if file_or_directory != "":
         path = file_or_directory[len(local_path):]
-
         path = path.replace("\\","/")
-
         path = remote_path + path
 
         return path
 
 
+def sftp_exists(sftp, path):
+    """os.path.exists for paramiko's SCP object
+    """
+    try:
+        sftp.stat(path)
+    except IOError, e:
+        if e[0] == 2:
+            return False
+        raise
+    else:
+        return True
 
+
+def sftp_is_file(ssh, path):
+    cmd = '[ -f "' + path + '" ] && echo "File" || echo "Directory"';
+    stdin, stdout, stderr = ssh.exec_command(cmd)
+    result = stdout.read()
+    result = result[:-1]
+
+    #sync_logger.info("Command: %s", cmd)
+
+    if result == "File":
+        return True
+    else:
+        return False
+
+
+#class FileEventHandler(FileSystemEventHandler):
 class FileEventHandler(FileSystemEventHandler):
-    def __init__(self, sftp):
-        self.sftp = sftp
+    
+    def __init__(self, ssh_client):
+        self.ssh_client = ssh_client
+        self.sftp_client = self.ssh_client.open_sftp()
 
 
     def on_moved(self, event):
-        what = 'directory' if event.is_directory else 'file'
-        logging.info("Moved %s: from %s to %s", what, event.src_path, event.dest_path)
+        old_path = win_to_lin_path(event.src_path)
+        new_path = win_to_lin_path(event.dest_path)
+        cmd  = 'mv "' + old_path + '" "' + new_path + '"'
+        self.ssh_client.exec_command(cmd)
+
+        sync_logger.info('Moved: %s', old_path)
+        sync_logger.info('   to: %s', new_path) 
     
+
     def on_created(self, event):
-        
         what = 'directory' if event.is_directory else 'file'
         localpath = event.src_path
         remotepath = win_to_lin_path(event.src_path)
 
-        
         if what == 'file':
-            self.sftp.put(localpath, remotepath)
+            # Wait some time before uploading the file because some 
+            # apps do weird stuff to files as they're being saved.
+            time.sleep(0.75) 
+            self.sftp_client.put(localpath, remotepath)
 
             sync_logger.info('Created file: %s', remotepath)
         else:
             new_directory = win_to_lin_path(event.src_path)
 
-            self.sftp.mkdir(new_directory)
+            self.sftp_client.mkdir(new_directory)
 
             sync_logger.info('Created folder: %s', new_directory)
+
 
     def on_deleted(self, event):
         old_file = win_to_lin_path(event.src_path)
 
         try:
-            self.sftp.remove(old_file)
+            self.sftp_client.remove(old_file)
             sync_logger.info('Deleted file: %s', old_file)
         except Exception as e:
-            #logging.error('Caught exception while deleting:')
-            self.sftp.rmdir(old_file)
-            sync_logger.info('Deleted folder: %s', old_file)
-            
-            #logging.exception(e)
-           
-        logging.info("Deleted: %s", old_file)
+            if sftp_exists(self.sftp_client, old_file):
+                self.ssh_client.exec_command('rm -r "' + old_file + '"')
+                sync_logger.info('Deleted folder: %s', old_file)
+            else:
+                sync_logger.warning('Folder does not exist: %s', old_file)
 
-        
-
+       
     def on_modified(self, event):
-        what = 'directory' if event.is_directory else 'file'
-        logging.info("Modified %s: %s", what, event.src_path)
+        localpath = event.src_path
+        remotepath = win_to_lin_path(event.src_path)
 
-def agent_auth(transport, username):
+        if sftp_is_file(self.ssh_client, remotepath):
+            self.sftp_client.put(localpath, remotepath)
+            sync_logger.info('Updated file: %s', remotepath)
+
+
+    def __del__(self):
+        self.sftp_client.close()
+
+
+def auth_user(ssh_client, username):
 
     agent = paramiko.Agent()
     agent_keys = agent.get_keys()
@@ -92,31 +161,46 @@ def agent_auth(transport, username):
     if len(agent_keys) == 0:
         sync_logger.warning('Failed loading ssh-agent authentication key.')
         try:
-            mykey = None
-            mykey = paramiko.RSAKey.from_private_key_file(private_key)
-            if mykey != None:
-                sync_logger.info('Using local authentication key.')
-                agent_keys = agent.get_keys() + (mykey,)
+            local_key = None
+            local_key = paramiko.RSAKey.from_private_key_file(private_key)
+            if local_key != None:
+                sync_logger.info('Using local authentication key:')
+                agent_keys = agent.get_keys() + (local_key,)
         except Exception, e:
             sync_logger.warning('Failed loading local authentication key.')
     else:
-        sync_logger.info('Using ssh-agent authentication key.')
+        sync_logger.info('Using ssh-agent authentication key:')
 
     for key in agent_keys:
-        sync_logger.info('Attempting to authenticate with RSA key %s... ' % key.get_fingerprint().encode('hex'))
+        sync_logger.info('%s... ' % key.get_fingerprint().encode('hex'))
         try:
-            transport.start_client()
-            transport.auth_publickey(username, key)
-            sync_logger.info('Success!')
-            return
+            ssh_client.connect(hostname=host, port=port, username=username, pkey=key)
+            sync_logger.info('RSA Authentication successful!')
+            return True
         except paramiko.SSHException, e:
-            sync_logger.warning('Failed!', e)
+            sync_logger.error('RSA Authentication failed!')
 
-"""
-Application entry point for sync.py
+    sync_logger.warning('RSA key auth failed! Trying password login...')
+    try:
+        ssh_client.connect(hostname=host, port=port, username=username, password=password)
+        sync_logger.info('Password login successful.')
+        return True
+    except paramiko.AuthenticationException:
+        sync_logger.error('Unable to authenticate!')
+        sync_logger.error('Password missing or incorrect.')
+        sync_logger.info('Please properly configure your sync.py header variables and try again.')
+        return False
+
+""" 
+-----------------------------------------------------------------------------------------------------------------------
+- Application entry point for sync.py
+-----------------------------------------------------------------------------------------------------------------------
 """
 if __name__ == "__main__":
-    logging.basicConfig(format='%(asctime)-15s %(levelname)s %(message)s')
+
+    logging.basicConfig(format=' %(asctime)s %(levelname)s %(message)s')
+    #logging.basicConfig(format='%(message)s')
+
     sync_logger = logging.getLogger(__name__)
     sync_logger.setLevel(logging.DEBUG)
 
@@ -124,45 +208,24 @@ if __name__ == "__main__":
     #paramiko.util.log_to_file('paramiko.log')
     #paramiko.util.logging.basicConfig(level=logging.ERROR)
 
-    transport = paramiko.Transport((host, port))
-
+    ssh_client = paramiko.SSHClient()
+    ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     
-    agent_auth(transport, username)
-
-
-    if not transport.is_authenticated():
-        sync_logger.warning('RSA key auth failed! Trying password login...')
-        try:
-            transport.connect(username=username, password=password)
-            sftp = paramiko.SFTPClient.from_transport(transport)
-            sync_logger.info('Login successful.')
-        except paramiko.AuthenticationException:
-            sync_logger.error('Unable to authenticate.  Password missing or incorrect.')
-            sync_logger.info('Please properly configure your sync.py header info and try again.')
-            sys.exit()
+    if auth_user(ssh_client, username) == True:
+        sync_logger.info('Connected to ssh://' + username + '@' + host + ':' + str(port) + remote_path)
+        event_handler = FileEventHandler(ssh_client=ssh_client)
+        observer = Observer()
+        observer.schedule(event_handler, local_path, recursive=True)
+        observer.start()
+        sync_logger.info('Watching ' + local_path)
     else:
-        transport.open_session()
-        sftp = paramiko.SFTPClient.from_transport(transport)
+        sys.exit()
 
-
-    path = sys.argv[1] if len(sys.argv) > 1 else local_path
-
-    #event_handler = LoggingEventHandler()
-    event_handler = FileEventHandler(sftp)
-
-    observer = Observer()
-
-    observer.schedule(event_handler, path, recursive=True)
-    observer.start()
-
-
-    
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        sftp.close()
-        transport.close()
+        ssh_client.close()
         observer.stop()
     
     observer.join()
