@@ -198,8 +198,9 @@ def auth_user(ssh_client, username):
 """
 if __name__ == "__main__":
 
-    #logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s')
-    logging.basicConfig(format='%(message)s')
+    logging.basicConfig(format=' %(asctime)s %(levelname)s %(message)s')
+    #logging.basicConfig(format='%(message)s')
+
     sync_logger = logging.getLogger(__name__)
     sync_logger.setLevel(logging.DEBUG)
 
