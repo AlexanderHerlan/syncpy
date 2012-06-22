@@ -3,7 +3,7 @@ sync.py simple folder synchronizer by Alexander Herlan (c) 2012
 Description:  Automatically update files on your webserver when they are 
 created modified or deleted locally.  The remote server is kept in sync Using 
 SFTP and SSH commands. Great for automatic web development testing. Its an in-house 
-way to securely replace dropbox for syncronization. 
+way to securely replace dropbox for syncronization in some development cases. 
 """
 import os
 import sys
