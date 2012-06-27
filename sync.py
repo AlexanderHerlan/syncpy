@@ -97,56 +97,60 @@ class FileEventHandler(FileSystemEventHandler):
 
 
     def on_moved(self, event):
-        old_path = win_to_lin_path(event.src_path)
-        new_path = win_to_lin_path(event.dest_path)
-        cmd  = 'mv "' + old_path + '" "' + new_path + '"'
-        self.ssh_client.exec_command(cmd)
+        if not ".git" in event.src_path:
+            old_path = win_to_lin_path(event.src_path)
+            new_path = win_to_lin_path(event.dest_path)
+            cmd  = 'mv "' + old_path + '" "' + new_path + '"'
+            self.ssh_client.exec_command(cmd)
 
-        sync_logger.info('Moved: %s', old_path)
-        sync_logger.info('   to: %s', new_path) 
+            sync_logger.info('Moved: %s', old_path)
+            sync_logger.info('   to: %s', new_path) 
     
 
     def on_created(self, event):
-        what = 'directory' if event.is_directory else 'file'
-        localpath = event.src_path
-        remotepath = win_to_lin_path(event.src_path)
+        if not ".git" in event.src_path:
+            what = 'directory' if event.is_directory else 'file'
+            localpath = event.src_path
+            remotepath = win_to_lin_path(event.src_path)
 
-        if what == 'file':
-            # Wait some time before uploading the file because some 
-            # apps do weird stuff to files as they're being saved.
-            time.sleep(0.75) 
-            self.sftp_client.put(localpath, remotepath)
+            if what == 'file':
+                # Wait some time before uploading the file because some 
+                # apps do weird stuff to files as they're being saved.
+                time.sleep(0.75) 
+                self.sftp_client.put(localpath, remotepath)
 
-            sync_logger.info('Created file: %s', remotepath)
-        else:
-            new_directory = win_to_lin_path(event.src_path)
+                sync_logger.info('Created file: %s', remotepath)
+            else:
+                new_directory = win_to_lin_path(event.src_path)
 
-            self.sftp_client.mkdir(new_directory)
+                self.sftp_client.mkdir(new_directory)
 
-            sync_logger.info('Created folder: %s', new_directory)
+                sync_logger.info('Created folder: %s', new_directory)
 
 
     def on_deleted(self, event):
-        old_file = win_to_lin_path(event.src_path)
+        if not ".git" in event.src_path:
+            old_file = win_to_lin_path(event.src_path)
 
-        try:
-            self.sftp_client.remove(old_file)
-            sync_logger.info('Deleted file: %s', old_file)
-        except Exception as e:
-            if sftp_exists(self.sftp_client, old_file):
-                self.ssh_client.exec_command('rm -r "' + old_file + '"')
-                sync_logger.info('Deleted folder: %s', old_file)
-            else:
-                sync_logger.warning('Folder does not exist: %s', old_file)
+            try:
+                self.sftp_client.remove(old_file)
+                sync_logger.info('Deleted file: %s', old_file)
+            except Exception as e:
+                if sftp_exists(self.sftp_client, old_file):
+                    self.ssh_client.exec_command('rm -r "' + old_file + '"')
+                    sync_logger.info('Deleted folder: %s', old_file)
+                else:
+                    sync_logger.warning('Folder does not exist: %s', old_file)
 
        
     def on_modified(self, event):
-        localpath = event.src_path
-        remotepath = win_to_lin_path(event.src_path)
+        if not ".git" in event.src_path:
+            localpath = event.src_path
+            remotepath = win_to_lin_path(event.src_path)
 
-        if sftp_is_file(self.ssh_client, remotepath):
-            self.sftp_client.put(localpath, remotepath)
-            sync_logger.info('Updated file: %s', remotepath)
+            if sftp_is_file(self.ssh_client, remotepath):
+                self.sftp_client.put(localpath, remotepath)
+                sync_logger.info('Updated file: %s', remotepath)
 
 
     def __del__(self):
