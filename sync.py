@@ -43,7 +43,7 @@ private_key   = ""
 # 3) (NOT RECOMMENDED for security reasons) You can put your SSH password associated
 #    with your username in the variable below
 #    Example: passowrd      = "LetMeIn"
-password      = "s8a7i3"
+password      = ""
 """
 -----------------------------------------------------------------------------------------------------------------------
                                     </End User Configuration Section>
