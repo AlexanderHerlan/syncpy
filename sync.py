@@ -9,6 +9,7 @@ import os
 import sys
 import time
 import logging
+import datetime
 from watchdog.observers import Observer
 from watchdog.events import LoggingEventHandler
 from watchdog.events import FileSystemEventHandler
@@ -104,7 +105,9 @@ class FileEventHandler(FileSystemEventHandler):
             self.ssh_client.exec_command(cmd)
 
             sync_logger.info('Moved: %s', old_path)
-            sync_logger.info('   to: %s', new_path) 
+            print '       Moved: ' + old_path
+            sync_logger.info('   to: %s', new_path)
+            print '          to: ' + new_path
     
 
     def on_created(self, event):
@@ -120,12 +123,14 @@ class FileEventHandler(FileSystemEventHandler):
                 self.sftp_client.put(localpath, remotepath)
 
                 sync_logger.info('Created file: %s', remotepath)
+                print 'Created file: ' + remotepath
             else:
                 new_directory = win_to_lin_path(event.src_path)
 
                 self.sftp_client.mkdir(new_directory)
 
                 sync_logger.info('Created folder: %s', new_directory)
+                print 'Created folder: ' + new_directory
 
 
     def on_deleted(self, event):
@@ -135,10 +140,12 @@ class FileEventHandler(FileSystemEventHandler):
             try:
                 self.sftp_client.remove(old_file)
                 sync_logger.info('Deleted file: %s', old_file)
+                print 'Deleted file: ' + old_file
             except Exception as e:
                 if sftp_exists(self.sftp_client, old_file):
                     self.ssh_client.exec_command('rm -r "' + old_file + '"')
                     sync_logger.info('Deleted folder: %s', old_file)
+                    print 'Deleted folder: ' + old_file
                 else:
                     sync_logger.warning('Folder does not exist: %s', old_file)
 
@@ -151,6 +158,7 @@ class FileEventHandler(FileSystemEventHandler):
             if sftp_is_file(self.ssh_client, remotepath):
                 self.sftp_client.put(localpath, remotepath)
                 sync_logger.info('Updated file: %s', remotepath)
+                print 'Updated file: ' + remotepath
 
 
     def __del__(self):
@@ -169,17 +177,20 @@ def auth_user(ssh_client, username):
             local_key = paramiko.RSAKey.from_private_key_file(private_key)
             if local_key != None:
                 sync_logger.info('Using local authentication key:')
+                print "Local authentication file found... ",
                 agent_keys = agent.get_keys() + (local_key,)
         except Exception, e:
             sync_logger.warning('Failed loading local authentication key.')
     else:
         sync_logger.info('Using ssh-agent authentication key:')
+        print "SSH Agent found ... ",
 
     for key in agent_keys:
         sync_logger.info('%s... ' % key.get_fingerprint().encode('hex'))
         try:
             ssh_client.connect(hostname=host, port=port, username=username, pkey=key)
             sync_logger.info('RSA Authentication successful!')
+            print "Authenticated ... ",
             return True
         except paramiko.SSHException, e:
             sync_logger.error('RSA Authentication failed!')
@@ -188,6 +199,7 @@ def auth_user(ssh_client, username):
     try:
         ssh_client.connect(hostname=host, port=port, username=username, password=password)
         sync_logger.info('Password login successful.')
+        print "Authenticated ... ",
         return True
     except paramiko.AuthenticationException:
         sync_logger.error('Unable to authenticate!')
@@ -206,7 +218,7 @@ if __name__ == "__main__":
     #logging.basicConfig(format='%(message)s')
 
     sync_logger = logging.getLogger(__name__)
-    sync_logger.setLevel(logging.DEBUG)
+    sync_logger.setLevel(logging.ERROR)
 
     # log SSH errors to file
     #paramiko.util.log_to_file('paramiko.log')
@@ -217,11 +229,17 @@ if __name__ == "__main__":
     
     if auth_user(ssh_client, username) == True:
         sync_logger.info('Connected to ssh://' + username + '@' + host + ':' + str(port) + remote_path)
+        print 'Connected!'
+        print 'Remote Folder: ssh://' + username + '@' + host + ':' + str(port) + remote_path
         event_handler = FileEventHandler(ssh_client=ssh_client)
         observer = Observer()
         observer.schedule(event_handler, local_path, recursive=True)
         observer.start()
         sync_logger.info('Watching ' + local_path)
+        print ' Local Folder: '  + local_path
+        now = datetime.datetime.now()
+        print now.strftime("\nNow syncing - %m/%d/%Y %I:%M %p %Ss")
+        print '--------------------------------------------------'
     else:
         sys.exit()
 
