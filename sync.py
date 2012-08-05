@@ -118,18 +118,18 @@ class FileEventHandler(FileSystemEventHandler):
 
 
     def on_moved(self, event):
-        #if not ignore_check(event.src_path, ignore_list):
-        old_path = filter_path(win_to_lin_path(event.src_path), filter_list)
-        new_path = filter_path(win_to_lin_path(event.dest_path), filter_list)
-        cmd  = 'mv "' + old_path + '" "' + new_path + '"'
-        self.ssh_client.exec_command(cmd)
+        if not ignore_check(event.src_path, ignore_list):
+            old_path = filter_path(win_to_lin_path(event.src_path), filter_list)
+            new_path = filter_path(win_to_lin_path(event.dest_path), filter_list)
+            cmd  = 'mv "' + old_path + '" "' + new_path + '"'
+            self.ssh_client.exec_command(cmd)
 
-        sync_logger.info('Moved: %s', old_path)
-        now = datetime.datetime.now()
-        print now.strftime("%I:%M.%S %p -"),
-        print '  Moved: ' + old_path[len(remote_path)+1:]
-        sync_logger.info('   to: %s', new_path)
-        print '            -      to: ' + new_path[len(remote_path)+1:]
+            sync_logger.info('Moved: %s', old_path)
+            now = datetime.datetime.now()
+            print now.strftime("%I:%M.%S %p -"),
+            print '  Moved: ' + old_path[len(remote_path)+1:]
+            sync_logger.info('   to: %s', new_path)
+            print '            -      to: ' + new_path[len(remote_path)+1:]
     
 
     def on_created(self, event):
