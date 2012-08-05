@@ -54,7 +54,7 @@ password      = ""
 
 # File names to ignore like temporary files forphotoshop saves or for ignoring GIT completely
 ignore_list = ['_tmp', '.git']
-#strings to remove from file operations
+# strings to remove from file operations
 filter_list = ['.crdownload']
 
 def win_to_lin_path(file_or_directory):
