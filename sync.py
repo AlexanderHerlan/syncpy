@@ -52,8 +52,10 @@ password      = ""
 -----------------------------------------------------------------------------------------------------------------------
 """
 
-# File names to ignore, like temporary files for downloads and photoshop saves, or when git is updated.
-ignore_list = ['.crdownload', '_tmp', '.git']
+# File names to ignore like temporary files forphotoshop saves or for ignoring GIT completely
+ignore_list = ['_tmp', '.git']
+#strings to remove from file operations
+filter_list = ['.crdownload']
 
 def win_to_lin_path(file_or_directory):
     
@@ -100,6 +102,12 @@ def ignore_check(text, ignore_list):
             return 1
     return 0
 
+def filter_path(path, filter):
+    for word in filter:
+        if path.endswith(word):
+            path = path[:-len(word)]
+    return path
+
 
 #class FileEventHandler(FileSystemEventHandler):
 class FileEventHandler(FileSystemEventHandler):
@@ -111,8 +119,8 @@ class FileEventHandler(FileSystemEventHandler):
 
     def on_moved(self, event):
         #if not ignore_check(event.src_path, ignore_list):
-        old_path = win_to_lin_path(event.src_path)
-        new_path = win_to_lin_path(event.dest_path)
+        old_path = filter_path(win_to_lin_path(event.src_path), filter_list)
+        new_path = filter_path(win_to_lin_path(event.dest_path), filter_list)
         cmd  = 'mv "' + old_path + '" "' + new_path + '"'
         self.ssh_client.exec_command(cmd)
 
@@ -128,14 +136,14 @@ class FileEventHandler(FileSystemEventHandler):
 
         if not ignore_check(event.src_path, ignore_list):
             what = 'directory' if event.is_directory else 'file'
-            localpath = event.src_path
-            remotepath = win_to_lin_path(event.src_path)
+            localpath = filter_path(event.src_path, filter_list)
+            remotepath = win_to_lin_path(localpath)
 
             if what == 'file':
                 # Wait some time before uploading the file because some 
                 # apps do weird stuff to files as they're being saved.
-                time.sleep(0.75) 
-                self.sftp_client.put(localpath, remotepath)
+                time.sleep(1) 
+                self.sftp_client.put(filter_path(localpath, filter_list), filter_path(remotepath, filter_list))
 
                 sync_logger.info('Created File: %s', remotepath)
                 now = datetime.datetime.now()
