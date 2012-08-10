@@ -193,8 +193,8 @@ class FileEventHandler(FileSystemEventHandler):
                         print 'Deleted: ' + old_file[len(remote_path)+1:]
                     else:
                         sync_logger.warning('Folder does not exist: %s', old_file)
-            if type(event) == watchdog.events.DirDeletedEvent:
-                print 'DOESNT WORK ON WINDOWS SEE: https://github.com/gorakhargosh/watchdog/issues/92'
+            #if type(event) == watchdog.events.DirDeletedEvent:
+                #print 'DOESNT WORK ON WINDOWS SEE: https://github.com/gorakhargosh/watchdog/issues/92'
 
             # Updating
             if type(event) == watchdog.events.FileModifiedEvent:
@@ -207,8 +207,8 @@ class FileEventHandler(FileSystemEventHandler):
                     now = datetime.datetime.now()
                     print now.strftime("%I:%M.%S %p -"),
                     print 'Updated: ' + remotepath[len(remote_path)+1:]
-            if type(event) == watchdog.events.DirModifiedEvent:
-                print "DOESNT WORK ON WINDOWS SEE: https://github.com/gorakhargosh/watchdog/issues/92"  
+            #if type(event) == watchdog.events.DirModifiedEvent:
+                #print "DOESNT WORK ON WINDOWS SEE: https://github.com/gorakhargosh/watchdog/issues/92"  
 
     def __del__(self):
         self.sftp_client.close()
