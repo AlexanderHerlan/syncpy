@@ -13,6 +13,7 @@ import datetime
 from watchdog.observers import Observer
 from watchdog.events import LoggingEventHandler
 from watchdog.events import FileSystemEventHandler
+import watchdog
 import paramiko
 
 """
@@ -22,14 +23,14 @@ import paramiko
 -----------------------------------------------------------------------------------------------------------------------
 """
 # The local folder on your computer to watch
-local_path    = "C:\\dev\\rolloff2"
+local_path    = "C:\\dev\\nodechess"
 # The remote folder on your web server to push to
-remote_path   = "/var/wwwdev"
+remote_path   = "/home/orbitrix/www/snakebyte.net/nodechessdev"
 # Your web server's host name and port
-host          = "10.0.0.20"
+host          = "snakebyte.net"
 port          = 22
 # Your Linux (webserver ssh) username
-username      = "rocs"
+username      = "orbitrix"
 
 # You have 3 options for authentication. Please choose only one of the following:
 
@@ -51,6 +52,11 @@ password      = ""
                                      (Do not edit below this line)
 -----------------------------------------------------------------------------------------------------------------------
 """
+
+# File names to ignore like temporary files forphotoshop saves or for ignoring GIT completely
+ignore_list = ['_tmp', '.git', '.tmp']
+# strings to remove from file operations
+filter_list = ['.crdownload']
 
 def win_to_lin_path(file_or_directory):
     
@@ -88,6 +94,25 @@ def sftp_is_file(ssh, path):
     else:
         return False
 
+def ignore_file(text, ignore_list):
+    "return 1 (true) if any of the ignore_list are in text"
+
+    if len(text[len(local_path)+1:]) <= 4:
+        return 1
+
+    for word in ignore_list:
+        if word in text:
+            #print now.strftime("%I:%M.%S %p -"),
+            #print 'Ignored: ' + text[len(local_path)+1:]
+            return 1
+    return 0
+
+def filter_path(path, filter):
+    for word in filter:
+        if path.endswith(word):
+            path = path[:-len(word)]
+    return path
+
 
 #class FileEventHandler(FileSystemEventHandler):
 class FileEventHandler(FileSystemEventHandler):
@@ -96,70 +121,94 @@ class FileEventHandler(FileSystemEventHandler):
         self.ssh_client = ssh_client
         self.sftp_client = self.ssh_client.open_sftp()
 
+    def on_any_event(self, event):
 
-    def on_moved(self, event):
-        if not ".git" in event.src_path:
-            old_path = win_to_lin_path(event.src_path)
-            new_path = win_to_lin_path(event.dest_path)
-            cmd  = 'mv "' + old_path + '" "' + new_path + '"'
-            self.ssh_client.exec_command(cmd)
+        if not ignore_file(event.src_path, ignore_list):
 
-            sync_logger.info('Moved: %s', old_path)
-            print '       Moved: ' + old_path
-            sync_logger.info('   to: %s', new_path)
-            print '          to: ' + new_path
-    
+            # Moving / Renaming
+            if type(event) == watchdog.events.FileMovedEvent:
+                old_path = filter_path(win_to_lin_path(event.src_path), filter_list)
+                new_path = filter_path(win_to_lin_path(event.dest_path), filter_list)
+                cmd  = 'mv "' + old_path + '" "' + new_path + '"'
+                self.ssh_client.exec_command(cmd)
 
-    def on_created(self, event):
-        if not ".git" in event.src_path:
-            what = 'directory' if event.is_directory else 'file'
-            localpath = event.src_path
-            remotepath = win_to_lin_path(event.src_path)
+                sync_logger.info('Moved: %s', old_path)
+                now = datetime.datetime.now()
+                print now.strftime("%I:%M.%S %p -"),
+                print '  Moved: ' + old_path[len(remote_path)+1:]
+                sync_logger.info('   to: %s', new_path)
+                print '            -      to: ' + new_path[len(remote_path)+1:]
+            if type(event) == watchdog.events.DirMovedEvent:
+                old_path = filter_path(win_to_lin_path(event.src_path), filter_list)
+                new_path = filter_path(win_to_lin_path(event.dest_path), filter_list)
+                cmd  = 'mv "' + old_path + '" "' + new_path + '"'
+                self.ssh_client.exec_command(cmd)
 
-            if what == 'file':
+                sync_logger.info('Moved: %s', old_path)
+                now = datetime.datetime.now()
+                print now.strftime("%I:%M.%S %p -"),
+                print '  Moved: ' + old_path[len(remote_path)+1:]
+                sync_logger.info('   to: %s', new_path)
+                print '            -      to: ' + new_path[len(remote_path)+1:]
+
+            # Creating
+            if type(event) == watchdog.events.FileCreatedEvent:
+                localpath = filter_path(event.src_path, filter_list)
+                remotepath = win_to_lin_path(localpath)
                 # Wait some time before uploading the file because some 
                 # apps do weird stuff to files as they're being saved.
-                time.sleep(0.75) 
-                self.sftp_client.put(localpath, remotepath)
+                time.sleep(1) 
+                self.sftp_client.put(filter_path(localpath, filter_list), filter_path(remotepath, filter_list))
 
-                sync_logger.info('Created file: %s', remotepath)
-                print 'Created file: ' + remotepath
-            else:
+                sync_logger.info('Created File: %s', remotepath)
+                now = datetime.datetime.now()
+                print now.strftime("%I:%M.%S %p -"),
+                print 'Created: ' + remotepath[len(remote_path)+1:]
+            if type(event) == watchdog.events.DirCreatedEvent:
                 new_directory = win_to_lin_path(event.src_path)
 
                 self.sftp_client.mkdir(new_directory)
 
-                sync_logger.info('Created folder: %s', new_directory)
-                print 'Created folder: ' + new_directory
+                sync_logger.info('Created Folder: %s', new_directory)
+                now = datetime.datetime.now()
+                print now.strftime("%I:%M.%S %p -"),
+                print 'Created: ' + new_directory[len(remote_path)+1:]
 
+            # Deleting
+            if type(event) == watchdog.events.FileDeletedEvent:
+                old_file = win_to_lin_path(event.src_path)
 
-    def on_deleted(self, event):
-        if not ".git" in event.src_path:
-            old_file = win_to_lin_path(event.src_path)
+                try:
+                    self.sftp_client.remove(old_file)
+                    sync_logger.info('Deleted: %s', old_file)
+                    now = datetime.datetime.now()
+                    print now.strftime("%I:%M.%S %p -"),
+                    print 'Deleted: ' + old_file[len(remote_path)+1:]
+                except Exception as e:
+                    if sftp_exists(self.sftp_client, old_file):
+                        self.ssh_client.exec_command('rm -r "' + old_file + '"')
+                        sync_logger.info('Deleted Folder: %s', old_file)
+                        now = datetime.datetime.now()
+                        print now.strftime("%I:%M.%S %p -"),
+                        print 'Deleted: ' + old_file[len(remote_path)+1:]
+                    else:
+                        sync_logger.warning('Folder does not exist: %s', old_file)
+            #if type(event) == watchdog.events.DirDeletedEvent:
+                #print 'DOESNT WORK ON WINDOWS SEE: https://github.com/gorakhargosh/watchdog/issues/92'
 
-            try:
-                self.sftp_client.remove(old_file)
-                sync_logger.info('Deleted file: %s', old_file)
-                print 'Deleted file: ' + old_file
-            except Exception as e:
-                if sftp_exists(self.sftp_client, old_file):
-                    self.ssh_client.exec_command('rm -r "' + old_file + '"')
-                    sync_logger.info('Deleted folder: %s', old_file)
-                    print 'Deleted folder: ' + old_file
-                else:
-                    sync_logger.warning('Folder does not exist: %s', old_file)
+            # Updating
+            if type(event) == watchdog.events.FileModifiedEvent:
+                localpath = event.src_path
+                remotepath = win_to_lin_path(event.src_path)
 
-       
-    def on_modified(self, event):
-        if not ".git" in event.src_path:
-            localpath = event.src_path
-            remotepath = win_to_lin_path(event.src_path)
-
-            if sftp_is_file(self.ssh_client, remotepath):
-                self.sftp_client.put(localpath, remotepath)
-                sync_logger.info('Updated file: %s', remotepath)
-                print 'Updated file: ' + remotepath
-
+                if sftp_is_file(self.ssh_client, remotepath):
+                    self.sftp_client.put(localpath, remotepath)
+                    sync_logger.info('Updated: %s', remotepath)
+                    now = datetime.datetime.now()
+                    print now.strftime("%I:%M.%S %p -"),
+                    print 'Updated: ' + remotepath[len(remote_path)+1:]
+            #if type(event) == watchdog.events.DirModifiedEvent:
+                #print "DOESNT WORK ON WINDOWS SEE: https://github.com/gorakhargosh/watchdog/issues/92"  
 
     def __del__(self):
         self.sftp_client.close()
@@ -196,6 +245,7 @@ def auth_user(ssh_client, username):
             sync_logger.error('RSA Authentication failed!')
 
     sync_logger.warning('RSA key auth failed! Trying password login...')
+    print "Using Password ... ",
     try:
         ssh_client.connect(hostname=host, port=port, username=username, password=password)
         sync_logger.info('Password login successful.')
@@ -227,10 +277,12 @@ if __name__ == "__main__":
     ssh_client = paramiko.SSHClient()
     ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     
+    print '-------------------------------------------------------------------------------'
     if auth_user(ssh_client, username) == True:
         sync_logger.info('Connected to ssh://' + username + '@' + host + ':' + str(port) + remote_path)
         print 'Connected!'
-        print 'Remote Folder: ssh://' + username + '@' + host + ':' + str(port) + remote_path
+        print 'Remote Server: ssh://' + username + '@' + host + ':' + str(port)
+        print 'Remote Folder: ' + remote_path
         event_handler = FileEventHandler(ssh_client=ssh_client)
         observer = Observer()
         observer.schedule(event_handler, local_path, recursive=True)
@@ -239,7 +291,7 @@ if __name__ == "__main__":
         print ' Local Folder: '  + local_path
         now = datetime.datetime.now()
         print now.strftime("\nNow syncing - %m/%d/%Y %I:%M %p %Ss")
-        print '--------------------------------------------------'
+        print '-------------------------------------------------------------------------------'
     else:
         sys.exit()
 
