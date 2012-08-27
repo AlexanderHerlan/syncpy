@@ -8,7 +8,7 @@ and fill it with your own settings.
 
 Your .config file may contain multple sections (or "Projects") denoted by [] square brackets.
 Each section represents an individual project you are working on, with all the server settings required to sync to that server.
-You can name projects whatever you would like as long as they are only alpha and numberic characters. (NO SPACES, NO SYMBOLS)
+You can name projects whatever you would like as long as they are only alpha and numeric characters. (NO SPACES, NO SYMBOLS)
 
 There should be settings for 3 example projects in the provided sync.config.example file.
 An example of one project should look as follows:
