@@ -49,13 +49,13 @@ Authentication
 
 You have 3 options for authentication. Please choose only one of the following:
 
-First Option: If you are already running an ssh-agent (like Pageant for Putty) with your RSA key properly loaded, you can leave both the **private_key** and **password** variables empty. Authentication should be automatic as long as the **username** provied is correct. 
+First Option - If you are already running an ssh-agent (like Pageant for Putty) with your RSA key properly loaded, you can leave both the **private_key** and **password** variables empty. Authentication should be automatic as long as the **username** provied is correct. 
 
-Second Option: You can put the path to your OpenSSH formated RSA key in the **private_key** variable if you prefer not to use an SSH Agent.
+Second Option - You can put the path to your OpenSSH formated RSA key in the **private_key** variable if you prefer not to use an SSH Agent.
 
 	private_key   = C:/Users/YourUsername/Documents/private-key.ppk
 
-Third Option: (NOT RECOMMENDED for security reasons) You can put your SSH password associated with your **username** in the **password** variable as shown below:
+Third Option - (NOT RECOMMENDED for security reasons) You can put your SSH password associated with your **username** in the **password** variable as shown below:
 
 	passowrd      = LetMeIn
 

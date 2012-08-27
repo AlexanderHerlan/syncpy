@@ -224,8 +224,6 @@ def auth_user(ssh_client, username):
 
 
 def load_config(project):
-	Config = ConfigParser.ConfigParser()
-	Config.read("sync.config")
 	if project in Config.sections():
 		dict1 = {}
 		options = Config.options(project)
@@ -245,6 +243,13 @@ def load_config(project):
 		return False
 
 
+def file_exists(PATH):
+	if os.path.exists(PATH) and os.path.isfile(PATH) and os.access(PATH, os.R_OK):
+		return True
+	else:
+		return False
+
+
 """ 
 -----------------------------------------------------------------------------------------------------------------------
 - Application entry point for sync.py
@@ -255,9 +260,8 @@ seperator = '-------------------------------------------------------------------
 
 if __name__ == "__main__":
 
+	# Initialize python's logging facilities
 	logging.basicConfig(format=' %(asctime)s %(levelname)s %(message)s')
-	#logging.basicConfig(format='%(message)s')
-
 	sync_logger = logging.getLogger(__name__)
 	sync_logger.setLevel(logging.ERROR)
 
@@ -266,22 +270,57 @@ if __name__ == "__main__":
 	#paramiko.util.logging.basicConfig(level=logging.ERROR)
 
 	print seperator
-	# load external .config file if its name has been passed as a command line variable to the script
-	if len(sys.argv) < 2:
-		print "Please specify a project name after the sync.py script in the command line"
-		print "Example: python sync.py MyProject"
+	print 'Welcome to sync.py'
+
+	# load external .config
+	if file_exists('./sync.config'):
+		# If the config file is found Initialize python's config parser
+		Config = ConfigParser.ConfigParser()
+		Config.read("sync.config")
+
+		print 'Config file found...'
+
+		if len(sys.argv) < 2:
+			print "Please choose one of these existing projects:"
+			print ' '
+			project_list = Config.sections()
+			i = 0
+			for project in project_list:
+				i += 1
+				print str(i) + ' - ' + project
+
+			print ' '
+
+			project_select = raw_input('> ')
+			if project_select != "":
+
+				project_select = int(project_select) - 1
+
+			#print str(len(project_list)) + ' ' + str(project_select)
+			if project_select > len(project_list) - 1 or project_select < 0:
+				print "Project not found"
+				print seperator
+				sys.exit()
+			else:
+				settings = load_config(project_list[project_select])
+				print "Selected Project: " + project_list[project_select]
+		else:
+			settings = load_config(sys.argv[1])
+
+			if settings != False:
+				print "Loaded project: " + sys.argv[1]
+			else:
+				print "Project name '" + sys.argv[1] + "' not found."
+				print "Please make sure your sync.config file is configured correctly"
+				print seperator
+				sys.exit()
+	else:
+		print 'Config file \'sync.config\' is missing, or you do not have read persmission.'
+		print 'Please see the included README.md file.'
 		print seperator
 		sys.exit()
-	else:
-		loaded_settings = load_config(sys.argv[1])
-		if loaded_settings != False:
-			settings = loaded_settings
-			print "Loading project: " + sys.argv[1]
-		else:
-			print "Project name '" + sys.argv[1] + "' not found."
-			print "Please make sure your sync.config file is configured correctly"
-			print seperator
-			sys.exit()
+
+
 
 
 
