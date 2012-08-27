@@ -37,9 +37,9 @@ Must be entered into the settings file as:
 
 	C:/dev/MyProject2
 
-The remote_path is the path on your web server that you are testing your site on.
+The remote_path is the path on your web server that you want to push files to.
 
-The host, port, and username settings should all be set to that of your linux username and server you are attempting to sync to
+The host, port, and username settings should all be set to that of your linux username and server you are attempting to sync to.
 
 The username setting MUST always be set. It needs to be the username of the account of the remote server you are connecting to, no matter what authentication scheme you are using.
 
@@ -50,14 +50,14 @@ Authentication
 
 You have 3 options for authentication. Please choose only one of the following:
 
-1. If you are already running an ssh-agent (like Pageant for Putty) with your RSA key properly loaded, you can leave both of these variables empty. 
+First Option: If you are already running an ssh-agent (like Pageant for Putty) with your RSA key properly loaded, you can leave both of these variables empty. 
 Authentication should be automatic as long as the username provied is correct. 
 
-2. You can put the path to your OpenSSH formated RSA key in the private_key variable if you prefer not to use an SSH Agent.
+Second Option: You can put the path to your OpenSSH formated RSA key in the private_key variable if you prefer not to use an SSH Agent.
 
 	private_key   = C:/Users/YourUsername/Documents/private-key.ppk
 
-3. (NOT RECOMMENDED for security reasons) You can put your SSH password associated with your username in the variable below
+Third Option: (NOT RECOMMENDED for security reasons) You can put your SSH password associated with your username in the variable below
 
 	passowrd      = LetMeIn
 
