@@ -3,15 +3,14 @@ Sync.py
 
 Understanding the .config file
 ------------------------------
-When using sync.py you should rename the included sync.config.example file to sync.config
+When using sync.py you should rename the included "sync.config.example" file to "sync.config"
 and fill it with your own settings.
 
-Your settings file may contain multple sections denoted by [] square brackets.
-Each section represents an individual project you are working on, and all the 
-server settings required to sync to that server.
+Your settings file may contain multple sections (or "Projects") denoted by [] square brackets.
+Each section represents an individual project you are working on, with all the server settings required to sync to that server.
 
-There should be settings for 3 example projects in the provide .config.example file.
-One of the projects should look as follows:
+There should be settings for 3 example projects in the provided .config.example file.
+An example of one project should look as follows:
 
 	[MyProject2]
 	local_path    = C:/dev/MyProject2
@@ -49,7 +48,7 @@ Authentication
 
 You have 3 options for authentication. Please choose only one of the following:
 
-First Option: If you are already running an ssh-agent (like Pageant for Putty) with your RSA key properly loaded, you can leave both of these variables empty. Authentication should be automatic as long as the username provied is correct. 
+First Option: If you are already running an ssh-agent (like Pageant for Putty) with your RSA key properly loaded, you can leave both the "private_key" and "password" variables empty. Authentication should be automatic as long as the username provied is correct. 
 
 Second Option: You can put the path to your OpenSSH formated RSA key in the private_key variable if you prefer not to use an SSH Agent.
 
