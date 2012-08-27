@@ -6,7 +6,12 @@ Understanding the .config file
 When using sync.py you should rename the included sync.config.example file to sync.config
 and fill it with your own settings.
 
-The examples provides should look as follows:
+Your settings file may contain multple sections denoted by [] square brackets.
+Each section represents an individual project you are working on, and all the 
+server settings required to sync to that server.
+
+There should be settings for 3 example projects in the provide .config.example file.
+One of the projects should look as follows:
 
 	[MyProject2]
 	local_path    = C:/dev/MyProject2
@@ -17,6 +22,11 @@ The examples provides should look as follows:
 	private_key   = 
 	password      = bar
 
+You only need 1 project minimum, but you can store as many as you'd like, as long as they follow this basic structure.
+
+
+Breaking down the .config variables
+-----------------------------------
 
 The local_path is your working directory on your local system. Please note that you should use FORWARD ( / ) slashes even for Windows path
 So what would normally be:
@@ -27,21 +37,29 @@ Must be entered into the settings file as:
 
 	C:/dev/MyProject2
 
-The remote_path is the path on your web server that you are testing your site on
+The remote_path is the path on your web server that you are testing your site on.
 
-The host, por, and username should all be those of your linux server you are attempting to sync to
+The host, port, and username settings should all be set to that of your linux username and server you are attempting to sync to
+
+The username setting MUST always be set. It needs to be the username of the account of the remote server you are connecting to, no matter what authentication scheme you are using.
+
+The last 2 variables in this example are described below.
+
+Authentication
+--------------
 
 You have 3 options for authentication. Please choose only one of the following:
 
-1. If you are already running an ssh-agent (like Pageant for Putty) with your RSA key properly loaded, you can leave both of these variables with null strings. Authentication should be automatic as long as the above username is correct. 
+1. If you are already running an ssh-agent (like Pageant for Putty) with your RSA key properly loaded, you can leave both of these variables empty. 
+Authentication should be automatic as long as the username provied is correct. 
 
-2. You can put the path to your OpenSSH formated RSA key in the private_key variable below
+2. You can put the path to your OpenSSH formated RSA key in the private_key variable if you prefer not to use an SSH Agent.
 
 	private_key   = C:/Users/YourUsername/Documents/private-key.ppk
 
 3. (NOT RECOMMENDED for security reasons) You can put your SSH password associated with your username in the variable below
 
-	Example: passowrd      = LetMeIn
+	passowrd      = LetMeIn
 
 Invoking the script
 -------------------
@@ -50,3 +68,5 @@ Sync.py should be invoked as follows:
 	python sync.py MyProject2
 
 with the name of the "section" from your settings file you would like to load being passed as the first argument to the script.
+
+If you have any questions feel free to tweet me: https://twitter.com/AlexHerlan
