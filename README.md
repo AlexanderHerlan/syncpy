@@ -8,6 +8,7 @@ and fill it with your own settings.
 
 Your .config file may contain multple sections (or "Projects") denoted by [] square brackets.
 Each section represents an individual project you are working on, with all the server settings required to sync to that server.
+You can name projects whatever you would like as long as they are only alpha and numberic characters. (NO SPACES, NO SYMBOLS)
 
 There should be settings for 3 example projects in the provided sync.config.example file.
 An example of one project should look as follows:
@@ -54,7 +55,7 @@ Second Option: You can put the path to your OpenSSH formated RSA key in the **pr
 
 	private_key   = C:/Users/YourUsername/Documents/private-key.ppk
 
-Third Option: (NOT RECOMMENDED for security reasons) You can put your SSH password associated with your username in the variable **password** variable like blow
+Third Option: (NOT RECOMMENDED for security reasons) You can put your SSH password associated with your **username** in the variable **password** variable like blow
 
 	passowrd      = LetMeIn
 
