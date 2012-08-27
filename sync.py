@@ -307,10 +307,10 @@ if __name__ == "__main__":
 					sys.exit()
 				else:
 					settings = load_config(project_list[project_select])
-					print "Loading project: " + project_list[project_select] + "'"
+					print "Loading project: " + project_list[project_select]
 			else:
 				if len(project_list) >= 1:
-					print "Loading project: '" + project_list[0] + "'"
+					print "Loading project: " + project_list[0]
 					settings = load_config(project_list[0])
 					project_list[0]
 				else:
@@ -322,7 +322,7 @@ if __name__ == "__main__":
 			settings = load_config(sys.argv[1])
 
 			if settings != False:
-				print "Loading project: '" + sys.argv[1] + "'"
+				print "Loading project: " + sys.argv[1]
 			else:
 				print "Project name '" + sys.argv[1] + "' not found."
 				print "Please make sure your sync.config file is configured properly"
@@ -346,6 +346,7 @@ if __name__ == "__main__":
 	if auth_user(ssh_client, settings['username']) == True:
 		sync_logger.info('Connected to ssh://' + settings['username'] + '@' + settings['host'] + ':' + str(settings['port']) + settings['remote_path'])
 		print 'Connected!'
+		print ' Local Folder: '  + settings['local_path']
 		print 'Remote Server: ssh://' + settings['username'] + '@' + settings['host'] + ':' + str(settings['port'])
 		print 'Remote Folder: ' + settings['remote_path']
 		event_handler = FileEventHandler(ssh_client=ssh_client)
@@ -353,9 +354,8 @@ if __name__ == "__main__":
 		observer.schedule(event_handler, settings['local_path'], recursive=True)
 		observer.start()
 		sync_logger.info('Watching ' + settings['local_path'])
-		print ' Local Folder: '  + settings['local_path']
 		now = datetime.datetime.now()
-		print now.strftime("\nNow syncing - %m/%d/%Y %I:%M %p %Ss")
+		print now.strftime("\nNow syncing - %m/%d/%Y %I:%M %p %Ss - CTRL+C to exit.")
 		print seperator
 	else:
 		sys.exit()
