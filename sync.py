@@ -59,14 +59,18 @@ def sftp_is_file(ssh, path):
 	else:
 		return False
 
-def ignore_file(text, ignore_list):
-	"return 1 (true) if any of the ignore_list are in text"
+def ignore_file(file_path, ignore_list):
+	"return 1 (true) if any of the ignore_list are in file_path"
 
-	if len(text[len(settings['local_path'])+1:]) <= 4:
-		return 1
+	if file_path.find('\\') != -1:
+		file_path = file_path[len(settings['local_path'])+1:]
+		path_elements = file_path.split('\\')
+
+		if len(path_elements[len(path_elements)-1]) <= 4:
+			return 1
 
 	for word in ignore_list:
-		if word in text:
+		if word in file_path:
 			#print now.strftime("%I:%M.%S %p -"),
 			#print 'Ignored: ' + text[len(local_path)+1:]
 			return 1
@@ -90,45 +94,19 @@ class FileEventHandler(FileSystemEventHandler):
 
 		if not ignore_file(event.src_path, ignore_list):
 
-			# Moving / Renaming
-			if type(event) == watchdog.events.FileMovedEvent:
-				old_path = filter_path(win_to_lin_path(event.src_path), filter_list)
-				new_path = filter_path(win_to_lin_path(event.dest_path), filter_list)
-				cmd  = 'mv "' + old_path + '" "' + new_path + '"'
-				self.ssh_client.exec_command(cmd)
-
-				sync_logger.info('Moved: %s', old_path)
-				now = datetime.datetime.now()
-				print now.strftime("%I:%M.%S %p -"),
-				print '  Moved: ' + old_path[len(settings['remote_path'])+1:]
-				sync_logger.info('   to: %s', new_path)
-				print '            -      to: ' + new_path[len(settings['remote_path'])+1:]
-			if type(event) == watchdog.events.DirMovedEvent:
-				old_path = filter_path(win_to_lin_path(event.src_path), filter_list)
-				new_path = filter_path(win_to_lin_path(event.dest_path), filter_list)
-				cmd  = 'mv "' + old_path + '" "' + new_path + '"'
-				self.ssh_client.exec_command(cmd)
-
-				sync_logger.info('Moved: %s', old_path)
-				now = datetime.datetime.now()
-				print now.strftime("%I:%M.%S %p -"),
-				print '  Moved: ' + old_path[len(remote_path)+1:]
-				sync_logger.info('   to: %s', new_path)
-				print '            -      to: ' + new_path[len(settings['remote_path'])+1:]
-
 			# Creating
 			if type(event) == watchdog.events.FileCreatedEvent:
 				localpath = filter_path(event.src_path, filter_list)
-				remotepath = win_to_lin_path(localpath)
+				remotepath = filter_path(win_to_lin_path(localpath), filter_list)
 				# Wait some time before uploading the file because some 
 				# apps do weird stuff to files as they're being saved.
-				time.sleep(1) 
-				self.sftp_client.put(filter_path(localpath, filter_list), filter_path(remotepath, filter_list))
-
-				sync_logger.info('Created File: %s', remotepath)
-				now = datetime.datetime.now()
-				print now.strftime("%I:%M.%S %p -"),
-				print 'Created: ' + remotepath[len(settings['remote_path'])+1:]
+				time.sleep(1)
+				if file_exists(localpath):
+					self.sftp_client.put(localpath, remotepath)
+					sync_logger.info('Created File: %s', remotepath)
+					now = datetime.datetime.now()
+					print now.strftime("%I:%M.%S %p -"),
+					print 'Created: ' + remotepath[len(settings['remote_path'])+1:]
 			if type(event) == watchdog.events.DirCreatedEvent:
 				new_directory = win_to_lin_path(event.src_path)
 
@@ -138,6 +116,51 @@ class FileEventHandler(FileSystemEventHandler):
 				now = datetime.datetime.now()
 				print now.strftime("%I:%M.%S %p -"),
 				print 'Created: ' + new_directory[len(settings['remote_path'])+1:]
+
+
+			# Updating
+			if type(event) == watchdog.events.FileModifiedEvent:
+				localpath = event.src_path
+				remotepath = win_to_lin_path(event.src_path)
+
+				if sftp_is_file(self.ssh_client, remotepath):
+					self.sftp_client.put(localpath, remotepath)
+					sync_logger.info('Updated: %s', remotepath)
+					now = datetime.datetime.now()
+					print now.strftime("%I:%M.%S %p -"),
+					print 'Updated: ' + remotepath[len(settings['remote_path'])+1:]
+			#if type(event) == watchdog.events.DirModifiedEvent:
+				#print "DOESNT WORK ON WINDOWS SEE: https://github.com/gorakhargosh/watchdog/issues/92"  
+
+
+			# Moving / Renaming
+			if type(event) == watchdog.events.FileMovedEvent:
+				if not ignore_file(event.dest_path, ignore_list):
+					old_path = filter_path(win_to_lin_path(event.src_path), filter_list)
+					new_path = filter_path(win_to_lin_path(event.dest_path), filter_list)
+					cmd  = 'mv "' + old_path + '" "' + new_path + '"'
+					self.ssh_client.exec_command(cmd)
+
+					sync_logger.info('Moved: %s', old_path)
+					now = datetime.datetime.now()
+					print now.strftime("%I:%M.%S %p -"),
+					print '  Moved: ' + old_path[len(settings['remote_path'])+1:]
+					sync_logger.info('   to: %s', new_path)
+					print '            -      to: ' + new_path[len(settings['remote_path'])+1:]
+			if type(event) == watchdog.events.DirMovedEvent:
+				if not ignore_file(event.dest_path, ignore_list):
+					old_path = filter_path(win_to_lin_path(event.src_path), filter_list)
+					new_path = filter_path(win_to_lin_path(event.dest_path), filter_list)
+					cmd  = 'mv "' + old_path + '" "' + new_path + '"'
+					self.ssh_client.exec_command(cmd)
+
+					sync_logger.info('Moved: %s', old_path)
+					now = datetime.datetime.now()
+					print now.strftime("%I:%M.%S %p -"),
+					print '  Moved: ' + old_path[len(remote_path)+1:]
+					sync_logger.info('   to: %s', new_path)
+					print '            -      to: ' + new_path[len(settings['remote_path'])+1:]
+
 
 			# Deleting
 			if type(event) == watchdog.events.FileDeletedEvent:
@@ -161,19 +184,6 @@ class FileEventHandler(FileSystemEventHandler):
 			#if type(event) == watchdog.events.DirDeletedEvent:
 				#print 'DOESNT WORK ON WINDOWS SEE: https://github.com/gorakhargosh/watchdog/issues/92'
 
-			# Updating
-			if type(event) == watchdog.events.FileModifiedEvent:
-				localpath = event.src_path
-				remotepath = win_to_lin_path(event.src_path)
-
-				if sftp_is_file(self.ssh_client, remotepath):
-					self.sftp_client.put(localpath, remotepath)
-					sync_logger.info('Updated: %s', remotepath)
-					now = datetime.datetime.now()
-					print now.strftime("%I:%M.%S %p -"),
-					print 'Updated: ' + remotepath[len(settings['remote_path'])+1:]
-			#if type(event) == watchdog.events.DirModifiedEvent:
-				#print "DOESNT WORK ON WINDOWS SEE: https://github.com/gorakhargosh/watchdog/issues/92"  
 
 	def __del__(self):
 		self.sftp_client.close()
