@@ -55,7 +55,7 @@ Second Option: You can put the path to your OpenSSH formated RSA key in the **pr
 
 	private_key   = C:/Users/YourUsername/Documents/private-key.ppk
 
-Third Option: (NOT RECOMMENDED for security reasons) You can put your SSH password associated with your **username** in the variable **password** variable like blow
+Third Option: (NOT RECOMMENDED for security reasons) You can put your SSH password associated with your **username** in the **password** variable as shown below:
 
 	passowrd      = LetMeIn
 
