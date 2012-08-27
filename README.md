@@ -65,6 +65,6 @@ Sync.py should be invoked as follows:
 
 	python sync.py MyProject2
 
-with the name of the [Project] from your settings file you would like to load being passed as the first argument to the script.
+The script requires that the first argument being passed to it is the name of the Project you would like to load from your settings file.
 
 If you have any questions feel free to tweet me: https://twitter.com/AlexHerlan
