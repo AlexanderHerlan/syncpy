@@ -22,14 +22,13 @@ One of the projects should look as follows:
 	private_key   = 
 	password      = bar
 
-You only need 1 project minimum, but you can store as many as you'd like, as long as they follow this basic structure.
+You only need 1 project minimum, but you can store as many as you'd like (not just the 3 I've included), as long as they follow this basic structure.
 
 
 Breaking down the .config variables
 -----------------------------------
 
-The local_path is your working directory on your local system. Please note that you should use FORWARD ( / ) slashes even for Windows path
-So what would normally be:
+The local_path is your working directory on your local system. Please note that you should use FORWARD ( / ) slashes even for Windows paths. So what would normally be:
 
 	C:\dev\MyProject2
 
@@ -41,7 +40,7 @@ The remote_path is the path on your web server that you want to push files to.
 
 The host, port, and username settings should all be set to that of your linux username and server you are attempting to sync to.
 
-The username setting MUST always be set. It needs to be the username of the account of the remote server you are connecting to, no matter what authentication scheme you are using.
+The username setting MUST always be set. It should be the username of an account on the remote server you are connecting to, no matter what authentication scheme you are using.
 
 The last 2 variables in this example are described below.
 
@@ -50,8 +49,7 @@ Authentication
 
 You have 3 options for authentication. Please choose only one of the following:
 
-First Option: If you are already running an ssh-agent (like Pageant for Putty) with your RSA key properly loaded, you can leave both of these variables empty. 
-Authentication should be automatic as long as the username provied is correct. 
+First Option: If you are already running an ssh-agent (like Pageant for Putty) with your RSA key properly loaded, you can leave both of these variables empty. Authentication should be automatic as long as the username provied is correct. 
 
 Second Option: You can put the path to your OpenSSH formated RSA key in the private_key variable if you prefer not to use an SSH Agent.
 
