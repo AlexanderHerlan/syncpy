@@ -281,42 +281,57 @@ if __name__ == "__main__":
 		print 'Config file found...'
 
 		if len(sys.argv) < 2:
-			print "Please choose one of these existing projects:"
-			print ' '
 			project_list = Config.sections()
-			i = 0
-			for project in project_list:
-				i += 1
-				print str(i) + ' - ' + project
 
-			print ' '
+			if len(project_list) > 1:
+				print "Please choose a project: "
+				print ' '
+				
+				i = 0
+				for project in project_list:
+					i += 1
+					print str(i) + ' - ' + project
 
-			project_select = raw_input('> ')
-			if project_select != "":
+				print ' '
 
-				project_select = int(project_select) - 1
+				project_select = raw_input('> ')
+				if project_select != "":
 
-			#print str(len(project_list)) + ' ' + str(project_select)
-			if project_select > len(project_list) - 1 or project_select < 0:
-				print "Project not found"
-				print seperator
-				sys.exit()
+					project_select = int(project_select) - 1
+
+				#print str(len(project_list)) + ' ' + str(project_select)
+				if project_select > len(project_list) - 1 or project_select < 0:
+					print "Project not found."
+					print 'See the included README.md file for more information.'
+					print seperator
+					sys.exit()
+				else:
+					settings = load_config(project_list[project_select])
+					print "Loading project: " + project_list[project_select] + "'"
 			else:
-				settings = load_config(project_list[project_select])
-				print "Selected Project: " + project_list[project_select]
+				if len(project_list) >= 1:
+					print "Loading project: '" + project_list[0] + "'"
+					settings = load_config(project_list[0])
+					project_list[0]
+				else:
+					print "No projects found in sync.config file.  Make sure it is configured properly"
+					print 'See the included README.md file for more information.'
+					print seperator
+					sys.exit()
 		else:
 			settings = load_config(sys.argv[1])
 
 			if settings != False:
-				print "Loaded project: " + sys.argv[1]
+				print "Loading project: '" + sys.argv[1] + "'"
 			else:
 				print "Project name '" + sys.argv[1] + "' not found."
-				print "Please make sure your sync.config file is configured correctly"
+				print "Please make sure your sync.config file is configured properly"
+				print 'See the included README.md file for more information.'
 				print seperator
 				sys.exit()
 	else:
 		print 'Config file \'sync.config\' is missing, or you do not have read persmission.'
-		print 'Please see the included README.md file.'
+		print 'See the included README.md file for more information.'
 		print seperator
 		sys.exit()
 

@@ -6,7 +6,7 @@ Understanding the .config file
 When using sync.py you should rename the included "sync.config.example" file to "sync.config"
 and fill it with your own settings.
 
-Your .config file may contain multple sections (or "Projects") denoted by [] square brackets.
+Your .config file may contain multiple sections (or "Projects") denoted by [] square brackets.
 Each section represents an individual project you are working on, with all the server settings required to sync to that server.
 You can name projects whatever you would like as long as they are only alpha and numeric characters. (NO SPACES, NO SYMBOLS)
 
@@ -38,9 +38,9 @@ Must be entered into the settings file as:
 
 The **remote_path** is the path on your web server that you want to push files to.
 
-The **host**, **port**, and **username** settings should all be set to that of your linux username and server you are attempting to sync to.
+The **host**, **port**, and **username** settings should all be set to that of your Linux user name and server you are attempting to sync to.
 
-The **username** setting MUST always be set. It should be the username of an account on the remote server you are connecting to, no matter what authentication scheme you are using.
+The **username** setting MUST always be set. It should be the user name of an account on the remote server you are connecting to, no matter what authentication scheme you are using.
 
 The last 2 variables in this example are described below.
 
@@ -49,9 +49,9 @@ Authentication
 
 You have 3 options for authentication. Please choose only one of the following:
 
-First Option - If you are already running an ssh-agent (like Pageant for Putty) with your RSA key properly loaded, you can leave both the **private_key** and **password** variables empty. Authentication should be automatic as long as the **username** provied is correct. 
+First Option - If you are already running an SSH agent (like Pageant for Putty) with your RSA key properly loaded, you can leave both the **private_key** and **password** variables empty. Authentication should happen automatically as long as the **username** provided is correct. 
 
-Second Option - You can put the path to your OpenSSH formated RSA key in the **private_key** variable if you prefer not to use an SSH Agent.
+Second Option - You can put the path to your OpenSSH formated RSA key in the **private_key** variable if you prefer not to use an SSH Agent.  For example:
 
 	private_key   = C:/Users/YourUsername/Documents/private-key.ppk
 
@@ -61,10 +61,18 @@ Third Option - (NOT RECOMMENDED for security reasons) You can put your SSH passw
 
 Invoking the script
 -------------------
-Sync.py should be invoked as follows:
+Sync.py requires a valid sync.config file with at least one project entry.
+
+You can invoke sync.py as follows:
+
+	python sync.py
+
+This will bring up a list of projects in your configuration file to choose from, or load the only project by default if only 1 exists.
+
+Alternatively you invoke the script with the name of the project you would like to load as the first command line argument as follows:
 
 	python sync.py MyProject2
 
-The script requires that the first argument being passed to it is the name of the Project you would like to load from your .config settings file.
+
 
 If you have any questions feel free to tweet me: https://twitter.com/AlexHerlan
