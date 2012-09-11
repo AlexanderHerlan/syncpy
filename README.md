@@ -4,7 +4,7 @@ Sync.py
 System Requirements / Dependencies 
 ------------
 
-* Microsoft Windows Vista or above (Currently untested on Linux.  Feel free to make a pull request.  I might get around to it some day.)
+* Microsoft Windows Vista or above (Currently untested on Linux.  Feel free to make a pull request if you would like to debug it yourself.  I might get around to doing it some day though)
 * [Python 2.7.x](http://www.python.org/getit/releases/2.7/)
 * [paramiko](http://www.lag.net/paramiko/)
 * [watchdog](http://pypi.python.org/pypi/watchdog)
@@ -15,9 +15,7 @@ Understanding the .config file
 When using sync.py you should rename the included "[sync.config.example](syncpy/blob/master/sync.config.example)" file to "sync.config"
 and fill it with your own settings.
 
-Your sync.config file may contain multiple sections (or "Projects") denoted by square brackets like these:  []
-Each section represents an individual project or folder that you wish to sync to a remote server, with all the server settings required to sync to that server.
-You can name projects whatever you would like as long as they are only alpha and numeric characters and contain **no spaces**, and **no symbols**.
+Your sync.config example file should contain multiple sections (aka "Projects") denoted by square brackets like these: []  Each project/section represents an individual folder on your local machine that you wish to sync to a remote server, with all the SSH/SFTP settings required to authenticate with that server, as well as the location of the remote folder that should mirror the specified local folder. You can name projects whatever you would like as long as they are only alpha and numeric characters and contain **no spaces**, and **no symbols**.
 
 There should be settings for 3 example projects in the provided sync.config.example file.
 An example of one project should look as follows:
@@ -31,7 +29,7 @@ An example of one project should look as follows:
 	private_key   = 
 	password      = bar
 
-You only need 1 project minimum, but you can store as many as you would like (not just the 3 I've included), as long as they follow the basic structure shown above.
+You only need 1 project minimum in your sync.config file for sync.py to work, but you can store as many as you would like (not just the 3 I've included), as long as they follow the basic structure shown above.
 
 
 Breaking down the .config variables
