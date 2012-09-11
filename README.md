@@ -36,10 +36,10 @@ An example of one project should look as follows:
 You only need 1 project minimum in your sync.config file for sync.py to work, but you can store as many as you would like (not just the 3 I've included), as long as they follow the basic structure shown above.
 
 
-Breaking down the .config variables
+Breaking down the .config settings
 -----------------------------------
 
-The **local_path** is your working directory on your local system. Please note that you should use FORWARD ( / ) slashes even for Windows paths. So what would normally be:
+The **local_path** setting is your working directory on your local system. Please note that you should use FORWARD ( / ) slashes even for Windows paths. So what would normally be:
 
 	C:\dev\MyProject2
 
@@ -53,7 +53,7 @@ The **host**, **port**, and **username** settings should all be set to that of y
 
 The **username** setting MUST always be set. It should be the user name of an account on the remote Linux server you are connecting to, no matter what authentication scheme you are using.
 
-The last 2 variables in this example are covered in the Authentication section below:
+The last 2 settings in this example are covered in the Authentication section below:
 
 
 Authentication
@@ -63,11 +63,11 @@ You have 3 options for authentication. Please choose only one of the following:
 
 **1) First Option** - (Highly recommended) If you are already running an SSH agent (like [Putty's Pageant.exe](http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html)) with your RSA key properly loaded, you can leave both the **private_key** and **password** settings in your sync.config file empty. Authentication should happen automatically as long as the **username** provided is correct. 
 
-**2) Second Option** - You can put the path to your OpenSSH formated RSA key in the **private_key** variable if you prefer not to use an SSH Agent.  For example:
+**2) Second Option** - You can put the path to your OpenSSH formated RSA key in the **private_key** setting if you prefer not to use an SSH Agent.  For example:
 
 	private_key   = C:/Users/Username/Documents/private-key.ppk
 
-**3) Third Option** - (NOT RECOMMENDED for security reasons) You can put your Linux SSH password associated with your Linux **username** in the **password** variable as shown below:
+**3) Third Option** - (NOT RECOMMENDED for security reasons) You can put your Linux SSH password associated with your Linux **username** in the **password** setting as shown below:
 
 	passowrd      = YourPasswordHere123
 
