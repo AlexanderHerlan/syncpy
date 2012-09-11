@@ -1,6 +1,15 @@
 Sync.py
 =======
 
+System Requirements / Dependencies 
+------------
+
+* Microsoft Windows Vista or above (Currently untested on Linux.  Feel free to make a pull request.  I might get around to it some day.)
+* [Python 2.7.x](http://www.python.org/getit/releases/2.7/)
+* [paramiko](http://www.lag.net/paramiko/)
+* [watchdog](http://pypi.python.org/pypi/watchdog)
+
+
 Understanding the .config file
 ------------------------------
 When using sync.py you should rename the included "sync.config.example" file to "sync.config"
@@ -44,6 +53,7 @@ The **username** setting MUST always be set. It should be the user name of an ac
 
 The last 2 variables in this example are described below.
 
+
 Authentication
 --------------
 
@@ -59,6 +69,7 @@ Third Option - (NOT RECOMMENDED for security reasons) You can put your SSH passw
 
 	passowrd      = LetMeIn
 
+
 Invoking the script
 -------------------
 Sync.py requires a valid sync.config file with at least one project entry.
@@ -72,7 +83,5 @@ This will bring up a list of projects in your configuration file to choose from,
 Alternatively you invoke the script with the name of the project you would like to load as the first command line argument as follows:
 
 	python sync.py MyProject2
-
-
 
 If you have any questions feel free to tweet me: https://twitter.com/AlexHerlan
