@@ -51,9 +51,9 @@ Must be entered into the sync.config settings file as:
 
 The **remote_path** is the folder on your Linux web server that you want to push files to from the **local_path**.
 
-The **host** must be the IP or domain name of the server you are attempting to sync to.
+The **host** must be the IP address or domain name of the server you are attempting to sync to.
 
-The **port** must be the port number of the SSH service on the remote host.
+The **port** must be the port number of the SSH service on the remote **host**.
 
 The **username** setting must be set to the Linux user name that has read access to the **remote_path** you are planning to sync to. 
 
