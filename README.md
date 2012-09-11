@@ -74,7 +74,7 @@ You have 3 options for authentication. Please choose only one of the following:
 
 Invoking the script
 -------------------
-Sync.py **requires** a valid sync.config file to be in the same directory as the sync.py script itself.  It will need to have at least one "Project" entry as outlined earlier in "Understanding the .config file" section of this README for the following commands to work.
+Sync.py **requires** a valid sync.config file to be in the same directory as the sync.py script itself before you run it.  It will need to have at least one "Project" entry as outlined earlier in "Understanding the .config file" section of this README for the following commands to work.
 
 You can invoke sync.py as follows:
 
@@ -82,7 +82,7 @@ You can invoke sync.py as follows:
 
 If you only have 1 entry in your sync.config settings file, it will load that by default.   Otherwise, running the script this way will bring up a multiple choice list of projects from your sync.config settings file.  Select the project you would like to activate by entering the corresponding number next to the project name in the list.
 
-Alternatively, if you invoke the script with the name of the Project you would like to load from your sync.config settings file, you can bypass the multiple choice menu as follows:
+Alternatively, if you invoke the script with the name of a Project from your sync.config settings file as the first command line argument to the script, you can bypass the multiple choice menu as follows:
 
 	python sync.py MyProject2
 
