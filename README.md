@@ -72,7 +72,7 @@ You have 3 options for authentication with the remote **host**. Please choose on
 
 **1) First Option** - (Highly recommended) If you are already familiar with and running an [SSH-agent](http://en.wikipedia.org/wiki/Ssh-agent) (like [Putty's Pageant.exe](http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html)) with your OpenSSH key properly loaded, you can leave both the **private_key** and **password** settings in your sync.config file empty. Authentication should happen automatically as long as the **username** setting provided is correct in matching with the key loaded into your Agent. 
 
-**2) Second Option** - You can put the path to your OpenSSH formated RSA key in the **private_key** setting if you prefer not to use an SSH Agent.  Remember the **username** setting must be associated with this key on the remote server.  For example:
+**2) Second Option** - You can put the path to your OpenSSH formated RSA key in the **private_key** setting if you prefer not to use an SSH Agent.  Remember the **username** setting must be associated with the key you are specifying here.  You can specify which key to use as such:
 
 	private_key   = C:/Users/Username/Documents/private-key.ppk
 
