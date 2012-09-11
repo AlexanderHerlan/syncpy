@@ -90,7 +90,7 @@ You can invoke sync.py as follows:
 
 	python sync.py
 
-If you only have 1 entry in your sync.config settings file, it will load that by default.   Otherwise, running the script this way will bring up a multiple choice list of projects from your sync.config settings file.  For example:
+If you only have 1 entry in your sync.config settings file, it will load that project by default and connect to the remote server automatically.   Otherwise, running the script this way will bring up a multiple choice list of projects from your sync.config settings file.  For example:
 
 	Welcome to sync.py
 	Config file found...
