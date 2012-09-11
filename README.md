@@ -19,7 +19,7 @@ Understanding the .config file
 When using sync.py you should rename the included "[sync.config.example](syncpy/blob/master/sync.config.example)" file to "sync.config"
 and fill it with your own settings.
 
-Your sync.config example file should contain multiple sections (aka "Projects") denoted by square brackets like these: []  Each project/section represents an individual folder on your local machine that you wish to sync to a remote server, with all the SSH/SFTP settings required to authenticate with that server, as well as the location of the remote folder that should mirror the specified local folder. You can name projects whatever you would like as long as they are **only alpha and numeric** characters and contain **no spaces**, and **no symbols**.
+Your sync.config example file should contain multiple sections (aka "Projects") denoted by square brackets like these: []  Each "Project"/section represents an individual folder on your local machine that you wish to sync to a remote server, with all the SSH/SFTP settings required to authenticate with that server, as well as the location of the remote folder that should mirror the specified local folder. You can name projects whatever you would like as long as they are **only alpha and numeric** characters and contain **no spaces**, and **no symbols**.
 
 There should be settings for 3 example projects in the provided [sync.config.example](syncpy/blob/master/sync.config.example) file.
 An example of one project should look as follows:
@@ -51,9 +51,9 @@ The **remote_path** is the path on your web server that you want to push files t
 
 The **host**, **port**, and **username** settings should all be set to that of your Linux user name and server you are attempting to sync to.
 
-The **username** setting MUST always be set. It should be the user name of an account on the remote server you are connecting to, no matter what authentication scheme you are using.
+The **username** setting MUST always be set. It should be the user name of an account on the remote Linux server you are connecting to, no matter what authentication scheme you are using.
 
-The last 2 variables in this example are described below.
+The last 2 variables in this example are covered in the Authentication section below:
 
 
 Authentication
@@ -67,26 +67,26 @@ You have 3 options for authentication. Please choose only one of the following:
 
 	private_key   = C:/Users/Username/Documents/private-key.ppk
 
-**3) Third Option** - (NOT RECOMMENDED for security reasons) You can put your SSH password associated with your Linux **username** in the **password** variable as shown below:
+**3) Third Option** - (NOT RECOMMENDED for security reasons) You can put your Linux SSH password associated with your Linux **username** in the **password** variable as shown below:
 
 	passowrd      = YourPasswordHere123
 
 
 Invoking the script
 -------------------
-Sync.py **requires** a valid sync.config file in the same directory as the sync.py script itself.  It will need to have at least one project entry as outline earlier in this document for the follow commands to work.
+Sync.py **requires** a valid sync.config file to be in the same directory as the sync.py script itself.  It will need to have at least one "Project" entry as outline earlier in "Understanding the .config file" section of this README for the following commands to work.
 
 You can invoke sync.py as follows:
 
 	python sync.py
 
-If you only have 1 entry in your configuration file, it will load that by default.   Otherwise, running the script this way will bring up a multiple choice list of projects from your configuration file.  Select the project you would like by entering the corresponding number next to the project name.
+If you only have 1 entry in your sync.config settings file, it will load that by default.   Otherwise, running the script this way will bring up a multiple choice list of projects from your sync.config settings file.  Select the project you would like by entering the corresponding number next to the project name.
 
-Alternatively, if you invoke the script with the name of the project you would like to load from your configuration file, you can bypass the multiple choice menu as follows:
+Alternatively, if you invoke the script with the name of the Project you would like to load from your sync.config settings file, you can bypass the multiple choice menu as follows:
 
 	python sync.py MyProject2
 
-(Note that in the sync.config configuration file, the project name is surrounded by [brackets_like_these] but when referencing the project name at the command line you should not have them)
+(Note that in the sync.config settings file, the project name is surrounded by [brackets_like_these] but when referencing the project name at the command line you should not have them)
 
 This will immediately load the specified project without delay. 
 
