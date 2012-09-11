@@ -47,7 +47,7 @@ Must be entered into the sync.config settings file as:
 
 	C:/dev/MyProject2
 
-The **remote_path** is the folder on your Linux web server that you want to push files to from the local_path.
+The **remote_path** is the folder on your Linux web server that you want to push files to from the **local_path**.
 
 The **host**, **port**, and **username** settings should all be set to your Linux user name and the connection info for the server you are attempting to sync to.
 
