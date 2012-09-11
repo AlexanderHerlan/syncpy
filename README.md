@@ -3,12 +3,12 @@ Sync.py
 
 Who this script is for
 ----------------------
-This script is for Windows developers who would like to "auto-upload on save" from ANY program to a Linux development server.  This is convenient so that you don't have to rely on manually FTPing anything **ever**, and you don't have to use inferior built in solutions like Adobe Dreamweaver's FTP, which will only "Upload on save" files that you edit from within it.  Sync.py watches your file system for **any** changes from **any** application and automatically uploads the changes to your Linux development server.  Once you start the script, it just stays out of your way and keeps everything synced up.  Its a great lightweight replacement for Dropbox if you have your own development server and don't like relying on 3rd party solutions in your development work flow.  sync.py is also 100% secure using SSH and SFTP connections to do all of its magic.  It also supports RSA Key file and SSH-Agent authentication so you never have to rely on inferior passwords.
+This script is for Windows developers who would like to "auto-upload on save" from ANY program to a Linux development server.  This is convenient so that you don't have to rely on manually FTPing anything **ever**, and you don't have to use inferior built in solutions like Adobe Dreamweaver's FTP, which will only "Upload on save" files that you edit from within it.  Sync.py watches your file system for **any** changes from **any** application and automatically uploads the changes to your Linux development server.  Once you start the sync.py script, it just stays out of your way and keeps everything synced up.  Its a great lightweight replacement for Dropbox if you have your own development server and don't like relying on 3rd party solutions in your development work flow.  sync.py is also 100% secure using SSH and SFTP connections to do all of its magic.  It also supports RSA Key file and SSH-Agent authentication so you never have to rely on inferior passwords.
 
 System Requirements / Dependencies 
 ------------
 
-* Microsoft Windows Vista or above (Currently untested on Linux.  Feel free to make a pull request if you would like to debug it yourself.  I might get around to doing it some day though)
+* Microsoft Windows Vista or above (Currently untested on Linux or WinXP.  Feel free to test it and let me know if it works.  I will get around to doing it some day though)
 * [Python 2.7.x](http://www.python.org/getit/releases/2.7/)
 * [paramiko](http://www.lag.net/paramiko/)
 * [watchdog](http://pypi.python.org/pypi/watchdog)
