@@ -3,7 +3,7 @@ Sync.py
 
 Who this script is for
 ----------------------
-This script is for Windows developers who would like to "auto-upload on save" from ANY program to a Linux development server.  This is convenient so that you don't have to rely on manually FTPing anything **ever**, and you don't have to use inferior built in solutions like Adobe Dreamweaver's FTP, which will only "Upload on save" files that you edit from within it.  Sync.py watches your file system for **any** changes from **any** application and automatically uploads the changes to your Linux development server.  Once you start the sync.py script, it just stays out of your way and keeps everything synced up.  Its a great lightweight replacement for Dropbox if you have your own development server and don't like relying on 3rd party solutions in your development work flow.  sync.py is also very secure using SSH and SFTP connections to do all of its magic.  It also supports RSA Key file and SSH-Agent authentication so you never have to rely on inferior passwords.
+This script is for Windows developers who would like to "auto-upload on save" from ANY program to a Linux development server.  This is convenient so that you don't have to rely on manually FTPing anything **ever**, and you don't have to use inferior built in solutions like Adobe Dreamweaver's FTP, which will only "Upload on save" files that you edit from within it.  Sync.py watches your file system for **any** changes from **any** application and automatically uploads the changes to your Linux development server.  Once you start the sync.py script, it just stays out of your way and keeps everything synced up.  Its a great lightweight replacement for Dropbox if you have your own development server and don't like relying on 3rd party solutions in your development work flow.  sync.py is also very secure using SSH and SFTP connections to do all of its magic.  It also supports [OpenSSH](http://en.wikipedia.org/wiki/OpenSSH)/[RSA Key](http://en.wikipedia.org/wiki/RSA_(algorithm)) file and [SSH-agent](http://en.wikipedia.org/wiki/Ssh-agent) authentication so you never have to rely on inferior passwords.
 
 System Requirements / Dependencies 
 ------------
@@ -61,7 +61,7 @@ Authentication
 
 You have 3 options for authentication. Please choose only one of the following:
 
-**1) First Option** - (Highly recommended) If you are already running an SSH agent (like [Putty's Pageant.exe](http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html)) with your RSA key properly loaded, you can leave both the **private_key** and **password** settings in your sync.config file empty. Authentication should happen automatically as long as the **username** provided is correct. 
+**1) First Option** - (Highly recommended) If you are already running an [SSH-agent](http://en.wikipedia.org/wiki/Ssh-agent) (like [Putty's Pageant.exe](http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html)) with your RSA key properly loaded, you can leave both the **private_key** and **password** settings in your sync.config file empty. Authentication should happen automatically as long as the **username** provided is correct. 
 
 **2) Second Option** - You can put the path to your OpenSSH formated RSA key in the **private_key** setting if you prefer not to use an SSH Agent.  For example:
 
