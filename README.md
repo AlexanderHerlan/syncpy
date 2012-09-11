@@ -39,7 +39,7 @@ You only need 1 project minimum in your sync.config file for sync.py to work, bu
 Breaking down the .config settings
 -----------------------------------
 
-The **local_path** setting is your working directory on your local system. Please note that you should use FORWARD ( / ) slashes even for Windows paths. So what would normally be:
+The **local_path** setting is your working directory for your project on your local system. Please note that you should use FORWARD ( / ) slashes even for Windows paths. So what would normally be:
 
 	C:\dev\MyProject2
 
@@ -47,11 +47,11 @@ Must be entered into the sync.config settings file as:
 
 	C:/dev/MyProject2
 
-The **remote_path** is the path on your web server that you want to push files to.
+The **remote_path** is the folder on your Linux web server that you want to push files to from the local_path.
 
-The **host**, **port**, and **username** settings should all be set to that of your Linux user name and server you are attempting to sync to.
+The **host**, **port**, and **username** settings should all be set to your Linux user name and the connection info for the server you are attempting to sync to.
 
-The **username** setting MUST always be set. It should be the user name of an account on the remote Linux server you are connecting to, no matter what authentication scheme you are using.
+The **username** setting MUST always be set despite which authentication method you might be using, for more information see the next section.
 
 The last 2 settings in this example are covered in the Authentication section below:
 
