@@ -115,4 +115,4 @@ This will immediately load the specified project without delay.
 
 
 
-If you have any questions feel free to tweet me: https://twitter.com/AlexHerlan
+If you have any questions, comments or critiques, feel free to tweet me @AlexHerlan or fork me or poke me or ... or whatever it is you kids do these days.
