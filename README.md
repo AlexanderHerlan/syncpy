@@ -74,7 +74,7 @@ You have 3 options for authentication. Please choose only one of the following:
 
 Invoking the script
 -------------------
-Sync.py **requires** a valid sync.config file to be in the same directory as the sync.py script itself.  It will need to have at least one "Project" entry as outline earlier in "Understanding the .config file" section of this README for the following commands to work.
+Sync.py **requires** a valid sync.config file to be in the same directory as the sync.py script itself.  It will need to have at least one "Project" entry as outlined earlier in "Understanding the .config file" section of this README for the following commands to work.
 
 You can invoke sync.py as follows:
 
