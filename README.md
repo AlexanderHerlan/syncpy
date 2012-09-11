@@ -41,7 +41,7 @@ You only need 1 project minimum in your sync.config file for sync.py to work, bu
 Breaking down the .config settings
 -----------------------------------
 
-The **local_path** setting is your working directory for your project on your local system. Please note that you should use FORWARD ( / ) slashes even for Windows paths. So what would normally be:
+The **local_path** setting is your working directory for your project on your local system. Please note that you should use forward slashes ( / ) even for Windows paths. So what would normally be:
 
 	C:\dev\MyProject2
 
