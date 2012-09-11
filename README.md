@@ -112,8 +112,7 @@ Alternatively, if you invoke the script with the name of a Project from your syn
 
 (Note that in the sync.config settings file, the project name is surrounded by [brackets_like_these] but when referencing the project name at the command line you should not have them)
 
-This will immediately load the specified project without delay. 
-
+This will immediately load the specified project without delay skipping over the multiple choice menu selection, even if other projects do exist. 
 
 
 If you have any questions, comments or critiques, feel free to tweet me @AlexHerlan or fork me or poke me or ... or whatever it is you kids do these days.
