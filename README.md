@@ -80,6 +80,7 @@ You have 3 options for authentication with the remote **host**. Please choose on
 
 	passowrd      = YourPasswordHere123
 
+Passwords are inherently less secure than cryptographic key based authentication, AND you're going to save it in an unencrypted settings file?!?!?! Shame on you!  [Learn about SSH-Agent based authentication already.](http://the.earth.li/~sgtatham/putty/0.58/htmldoc/Chapter9.html)
 
 Invoking the script
 -------------------
