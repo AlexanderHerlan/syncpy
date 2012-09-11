@@ -61,20 +61,20 @@ Authentication
 
 You have 3 options for authentication. Please choose only one of the following:
 
-**1) First Option** - If you are already running an SSH agent (like Pageant for Putty) with your RSA key properly loaded, you can leave both the **private_key** and **password** variables empty. Authentication should happen automatically as long as the **username** provided is correct. 
+**1) First Option** - (Highly recommended) If you are already running an SSH agent (like [Putty's Pageant.exe](http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html)) with your RSA key properly loaded, you can leave both the **private_key** and **password** settings in your sync.config file empty. Authentication should happen automatically as long as the **username** provided is correct. 
 
 **2) Second Option** - You can put the path to your OpenSSH formated RSA key in the **private_key** variable if you prefer not to use an SSH Agent.  For example:
 
-	private_key   = C:/Users/YourUsername/Documents/private-key.ppk
+	private_key   = C:/Users/Username/Documents/private-key.ppk
 
-**3) Third Option** - (NOT RECOMMENDED for security reasons) You can put your SSH password associated with your **username** in the **password** variable as shown below:
+**3) Third Option** - (NOT RECOMMENDED for security reasons) You can put your SSH password associated with your Linux **username** in the **password** variable as shown below:
 
-	passowrd      = LetMeIn
+	passowrd      = YourPasswordHere123
 
 
 Invoking the script
 -------------------
-Sync.py requires a valid sync.config file in the same directory as the sync.py script itself.  It will need to have at least one project entry as outline earlier in this document for the follow commands to work.
+Sync.py **requires** a valid sync.config file in the same directory as the sync.py script itself.  It will need to have at least one project entry as outline earlier in this document for the follow commands to work.
 
 You can invoke sync.py as follows:
 
