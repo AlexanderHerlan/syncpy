@@ -85,7 +85,21 @@ You can invoke sync.py as follows:
 
 	python sync.py
 
-If you only have 1 entry in your sync.config settings file, it will load that by default.   Otherwise, running the script this way will bring up a multiple choice list of projects from your sync.config settings file.  Select the project you would like to activate by entering the corresponding number next to the project name in the list.
+If you only have 1 entry in your sync.config settings file, it will load that by default.   Otherwise, running the script this way will bring up a multiple choice list of projects from your sync.config settings file.  For example:
+
+	Welcome to sync.py
+	Config file found...
+	Please choose a project:
+	1 - MyProject1
+	2 - MyProject2
+	3 - MyOtherProjectLOL
+
+	>
+
+Select the project you would like to activate by entering the corresponding number next to the name of the project you want in the list, like this:
+
+	> 2
+	Loading project: MyProject2  
 
 Alternatively, if you invoke the script with the name of a Project from your sync.config settings file as the first command line argument to the script, you can bypass the multiple choice menu as follows:
 
