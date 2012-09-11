@@ -64,7 +64,7 @@ The last 2 settings in this example, "**priavte_key**" and "**password**", are c
 Authentication
 --------------
 
-You have 3 options for authentication with the remote host. Please choose only one of the following:
+You have 3 options for authentication with the remote **host**. Please choose only one of the following:
 
 **1) First Option** - (Highly recommended) If you are already running an [SSH-agent](http://en.wikipedia.org/wiki/Ssh-agent) (like [Putty's Pageant.exe](http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html)) with your OpenSSH key properly loaded, you can leave both the **private_key** and **password** settings in your sync.config file empty. Authentication should happen automatically as long as the **username** setting provided is correct. 
 
