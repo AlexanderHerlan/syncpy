@@ -83,7 +83,7 @@ You have 3 options for authentication with the remote **host**. Please choose on
 
 Invoking the script
 -------------------
-Sync.py **requires** a valid sync.config file to be in the same directory as the sync.py script itself before you run it.  It will need to have at least one "Project" entry as outlined earlier in "Understanding the .config file" section of this README for the following commands to work.
+Sync.py **requires** a valid sync.config file to be in the same directory as the sync.py script itself before you can successfully run it.  It will need to have at least one "Project" entry as outlined earlier in "Understanding the .config file" section of this README for the following commands to work.
 
 You can invoke sync.py as follows:
 
