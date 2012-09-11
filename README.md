@@ -1,8 +1,8 @@
 Sync.py
 =======
 
-Who this script is for
-----------------------
+Who is this script is for and whats it all about
+------------------------------------------------
 This script is for Windows developers who would like to have "upload on save" file transport functionality from **any** program on their local windows computer, straight to a Linux development server, automatically.  This script provides a convenient way to do fast paced iterative based testing and development, in areas such as web application design and server administration.  Sync.py makes it so that you don't have to rely on manually FTPing anything **ever**, and you don't have to use inferior built in solutions like Adobe Dreamweaver's FTP, which will only "Upload on save" files that you edit from within it, and that can sometimes interrupt your work.  Sync.py watches your file system for **any** changes from **any** application and automatically uploads the changes to your Linux development server, 100% silently, in the background of whatever application you might be using.
 
 Sync.py is especially appealing if you have your own server and don't like relying on 3rd party cloud solutions like DropBox to help you test on your server.  Sync.py is self contained to your infrastructure, only uses your resources (bandwidth, storage space, etc) and is very secure.  sync.py is so secure because it uses SSH and SFTP connections to tunnel all of its traffic.  It also supports [OpenSSH](http://en.wikipedia.org/wiki/OpenSSH) key file and [SSH-agent](http://en.wikipedia.org/wiki/Ssh-agent) authentication so you never have to rely on inferior password based logins, or storying passwords in configuration files.
