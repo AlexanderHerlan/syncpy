@@ -12,7 +12,7 @@ System Requirements / Dependencies
 
 Understanding the .config file
 ------------------------------
-When using sync.py you should rename the included "sync.config.example" file to "sync.config"
+When using sync.py you should rename the included "[sync.config.example](syncpy/blob/master/sync.config.example)" file to "sync.config"
 and fill it with your own settings.
 
 Your sync.config file may contain multiple sections (or "Projects") denoted by square brackets like these:  []
@@ -31,7 +31,7 @@ An example of one project should look as follows:
 	private_key   = 
 	password      = bar
 
-You only need 1 project minimum, but you can store as many as you'd like (not just the 3 I've included), as long as they follow the basic structure shown above.
+You only need 1 project minimum, but you can store as many as you would like (not just the 3 I've included), as long as they follow the basic structure shown above.
 
 
 Breaking down the .config variables
@@ -41,7 +41,7 @@ The **local_path** is your working directory on your local system. Please note t
 
 	C:\dev\MyProject2
 
-Must be entered into the settings file as:
+Must be entered into the sync.config settings file as:
 
 	C:/dev/MyProject2
 
@@ -59,13 +59,13 @@ Authentication
 
 You have 3 options for authentication. Please choose only one of the following:
 
-1) First Option - If you are already running an SSH agent (like Pageant for Putty) with your RSA key properly loaded, you can leave both the **private_key** and **password** variables empty. Authentication should happen automatically as long as the **username** provided is correct. 
+**1) First Option** - If you are already running an SSH agent (like Pageant for Putty) with your RSA key properly loaded, you can leave both the **private_key** and **password** variables empty. Authentication should happen automatically as long as the **username** provided is correct. 
 
-2) Second Option - You can put the path to your OpenSSH formated RSA key in the **private_key** variable if you prefer not to use an SSH Agent.  For example:
+**2) Second Option** - You can put the path to your OpenSSH formated RSA key in the **private_key** variable if you prefer not to use an SSH Agent.  For example:
 
 	private_key   = C:/Users/YourUsername/Documents/private-key.ppk
 
-3) Third Option - (NOT RECOMMENDED for security reasons) You can put your SSH password associated with your **username** in the **password** variable as shown below:
+**3) Third Option** - (NOT RECOMMENDED for security reasons) You can put your SSH password associated with your **username** in the **password** variable as shown below:
 
 	passowrd      = LetMeIn
 
