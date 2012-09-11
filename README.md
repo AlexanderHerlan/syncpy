@@ -19,7 +19,7 @@ Understanding the .config file
 When using sync.py you should rename the included "[sync.config.example](syncpy/blob/master/sync.config.example)" file to "sync.config"
 and fill it with your own settings.
 
-Your sync.config example file should contain multiple sections (aka "Projects") denoted by square brackets like these: []  Each "Project"/section represents an individual folder on your local machine that you wish to sync to a remote server, with all the SSH/SFTP settings required to authenticate with that server, as well as the location of the remote folder that should mirror the specified local folder. You can name projects whatever you would like as long as they are **only alpha and numeric** characters and contain **no spaces**, and **no symbols**.
+Your sync.config example file should contain 3 sections (aka "Projects") denoted by square brackets like these: []  Each "Project"/section represents an individual folder on your local machine that you wish to sync with a folder on a remote server.  Each section also contains all the SSH/SFTP settings required to authenticate with that server. You can name projects whatever you would like as long as they are **only alpha and numeric** characters and contain **no spaces**, and **no symbols**.
 
 There should be settings for 3 example projects in the provided [sync.config.example](syncpy/blob/master/sync.config.example) file.
 An example of one project should look as follows:
