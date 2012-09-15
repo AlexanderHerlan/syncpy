@@ -18,7 +18,7 @@ System Requirements / Dependencies
 Please remember to use a python package manager like easy_install, pip or distribute (except for with PyCrypto on windows) to install the following python packages: 
 
 * [PyCrypto](https://www.dlitz.net/software/pycrypto/)  (This package can sometimes be problematic on windows.  It cannot be installed through most package management systems like easy_install pip etc [wtf python community?].  I recommend installing a pre-compiled binary that matches the correct python 2.7 version [from here](http://www.voidspace.org.uk/python/modules.shtml#pycrypto).  Linux folks have it easy on this one, just install with a package manager.)
-* [paramiko](http://www.lag.net/paramiko/) (This package MIGHT currently contains a bug in it, and I don't have a link to the patch I used to fix it, AND it appears to 404 now...  I can zip up the .egg/directory from my python and host it perhaps.  Stand by for updates on this.  If you get errors pointing back to this package let me know, I am pretty much aware of it though.  It MIGHT still work though.)
+* [paramiko](http://www.lag.net/paramiko/) (This package MIGHT currently contains a bug in it, and I don't have a link to the patch I used to fix it because it currently 404's...  I can zip up the .egg/directory from my python and host it perhaps.   [This is the bug and patch](http://www.dragffy.com/posts/patched-python-paramiko-1-7-7-1-windows-32-and-64-bit-installers) that I am talking about but as you can see the links no longer work.  Stand by for updates on this.  If you get errors pointing back to this package let me know, I am pretty much aware of it though.  It MIGHT still work.)
 * [watchdog](http://pypi.python.org/pypi/watchdog)
 
 
