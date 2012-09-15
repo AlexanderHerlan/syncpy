@@ -14,6 +14,7 @@ System Requirements / Dependencies
 
 * Microsoft Windows Vista or above (Currently untested on Linux or WinXP.  Feel free to test it and let me know if it works.  I will get around to doing it some day though)
 * [Python 2.7.x](http://www.python.org/getit/releases/2.7/)
+* [PyCrypto](https://www.dlitz.net/software/pycrypto/)
 * [paramiko](http://www.lag.net/paramiko/)
 * [watchdog](http://pypi.python.org/pypi/watchdog)
 
