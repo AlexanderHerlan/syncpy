@@ -29,7 +29,7 @@ There should be settings for 3 example projects in the provided [sync.config.exa
 An example of one project should look as follows:
 
 	[MyProject2]
-	local_path    = C:/dev/MyProject2
+	local_path    = C:\dev\MyProject2
 	remote_path   = /var/www/MyProject2
 	host          = 10.0.0.18
 	port          = 22
@@ -45,13 +45,8 @@ You only need 1 project minimum in your sync.config file for sync.py to work, bu
 Breaking down the .config settings
 -----------------------------------
 
-The **local_path** setting should be set to your working directory for the project on your local system you want to end up on your Linux server. Please note that you should use forward slashes ( / ) even for Windows paths. So what would normally be:
+The **local_path** setting should be set to your working directory for the project on your local system.  This will be the folder that is pushed to the server any time a change is detected inside of it.
 
-	C:\dev\MyProject2
-
-Must be entered into the sync.config settings file as:
-
-	C:/dev/MyProject2
 
 The **remote_path** is the folder on your Linux web server that you want to push files to from the **local_path**.
 
