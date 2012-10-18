@@ -11,11 +11,13 @@ import time
 import logging
 import datetime
 import ConfigParser
+import watchdog
+import paramiko
 from watchdog.observers import Observer
 from watchdog.events import LoggingEventHandler
 from watchdog.events import FileSystemEventHandler
-import watchdog
-import paramiko
+from ftplib import FTP
+import ftputil
 
 
 # File names to ignore like temporary files forphotoshop saves or for ignoring GIT completely
@@ -86,9 +88,12 @@ def filter_path(path, filter):
 #class FileEventHandler(FileSystemEventHandler):
 class FileEventHandler(FileSystemEventHandler):
 	
-	def __init__(self, ssh_client):
-		self.ssh_client = ssh_client
-		self.sftp_client = self.ssh_client.open_sftp()
+	def __init__(self, ssh_client=None, ftp_client=None):
+		if ssh_client is not None:
+			self.ssh_client = ssh_client
+			self.sftp_client = self.ssh_client.open_sftp()
+		elif ftp_client:
+			self.ftp_client = ftp_client
 
 	def on_any_event(self, event):
 
@@ -102,7 +107,10 @@ class FileEventHandler(FileSystemEventHandler):
 				# apps do weird stuff to files as they're being saved.
 				time.sleep(1)
 				if file_exists(localpath):
-					self.sftp_client.put(localpath, remotepath)
+					if settings['port'] == 22:
+						self.sftp_client.put(localpath, remotepath)
+					else:
+						self.ftp_client.upload(localpath, remotepath)
 					sync_logger.info('Created File: %s', remotepath)
 					now = datetime.datetime.now()
 					print now.strftime("%I:%M.%S %p -"),
@@ -110,7 +118,10 @@ class FileEventHandler(FileSystemEventHandler):
 			if type(event) == watchdog.events.DirCreatedEvent:
 				new_directory = win_to_lin_path(event.src_path)
 
-				self.sftp_client.mkdir(new_directory)
+				if settings['port'] == 22:
+					self.sftp_client.mkdir(new_directory)
+				else:
+					self.ftp_client.mkdir(new_directory)
 
 				sync_logger.info('Created Folder: %s', new_directory)
 				now = datetime.datetime.now()
@@ -124,7 +135,10 @@ class FileEventHandler(FileSystemEventHandler):
 				remotepath = win_to_lin_path(event.src_path)
 
 				if sftp_is_file(self.ssh_client, remotepath):
-					self.sftp_client.put(localpath, remotepath)
+					if settings['port'] == 22:
+						self.sftp_client.put(localpath, remotepath)
+					else:
+						self.ftp_client.upload(localpath, remotepath)
 					sync_logger.info('Updated: %s', remotepath)
 					now = datetime.datetime.now()
 					print now.strftime("%I:%M.%S %p -"),
@@ -167,20 +181,28 @@ class FileEventHandler(FileSystemEventHandler):
 				old_file = win_to_lin_path(event.src_path)
 
 				try:
-					self.sftp_client.remove(old_file)
+					if settings['port'] == 22:
+						self.sftp_client.remove(old_file)
+					else:
+						self.ftp_client.remove(old_file)
+					
 					sync_logger.info('Deleted: %s', old_file)
 					now = datetime.datetime.now()
 					print now.strftime("%I:%M.%S %p -"),
 					print 'Deleted: ' + old_file[len(settings['remote_path'])+1:]
 				except Exception as e:
-					if sftp_exists(self.sftp_client, old_file):
-						self.ssh_client.exec_command('rm -r "' + old_file + '"')
-						sync_logger.info('Deleted Folder: %s', old_file)
-						now = datetime.datetime.now()
-						print now.strftime("%I:%M.%S %p -"),
-						print 'Deleted: ' + old_file[len(settings['remote_path'])+1:]
+					if settings['port'] == 22:
+						if sftp_exists(self.sftp_client, old_file):
+							self.ssh_client.exec_command('rm -r "' + old_file + '"')
+						else:
+							sync_logger.warning('Folder does not exist: %s', old_file)
 					else:
-						sync_logger.warning('Folder does not exist: %s', old_file)
+						self.ftp_client.rmdir(old_file)
+
+					sync_logger.info('Deleted Folder: %s', old_file)
+					now = datetime.datetime.now()
+					print now.strftime("%I:%M.%S %p -"),
+					print 'Deleted: ' + old_file[len(settings['remote_path'])+1:]
 			#if type(event) == watchdog.events.DirDeletedEvent:
 				#print 'DOESNT WORK ON WINDOWS SEE: https://github.com/gorakhargosh/watchdog/issues/92'
 
@@ -346,35 +368,57 @@ if __name__ == "__main__":
 		sys.exit()
 
 
-
-
-
-	ssh_client = paramiko.SSHClient()
-	ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-	
 	print seperator
-	if auth_user(ssh_client, settings['username']) == True:
-		sync_logger.info('Connected to ssh://' + settings['username'] + '@' + settings['host'] + ':' + str(settings['port']) + settings['remote_path'])
-		print 'Connected!'
-		print ' Local Folder: '  + settings['local_path']
-		print 'Remote Server: ssh://' + settings['username'] + '@' + settings['host'] + ':' + str(settings['port'])
-		print 'Remote Folder: ' + settings['remote_path']
-		event_handler = FileEventHandler(ssh_client=ssh_client)
-		observer = Observer()
-		observer.schedule(event_handler, settings['local_path'], recursive=True)
-		observer.start()
-		sync_logger.info('Watching ' + settings['local_path'])
-		now = datetime.datetime.now()
-		print now.strftime("\nNow syncing - %m/%d/%Y %I:%M %p %Ss - CTRL+C to exit.")
-		print seperator
-	else:
-		sys.exit()
+
+	# if SSH File transfer
+	if settings['port'] == 22:
+		ssh_client = paramiko.SSHClient()
+		ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+		if auth_user(ssh_client, settings['username']) == True:
+			sync_logger.info('Connected to ssh://' + settings['username'] + '@' + settings['host'] + ':' + str(settings['port']) + settings['remote_path'])
+			print 'Connected!'
+			print ' Local Folder: '  + settings['local_path']
+			print 'Remote Server: ssh://' + settings['username'] + '@' + settings['host'] + ':' + str(settings['port'])
+			print 'Remote Folder: ' + settings['remote_path']
+			event_handler = FileEventHandler(ssh_client=ssh_client)
+			observer = Observer()
+			observer.schedule(event_handler, settings['local_path'], recursive=True)
+			observer.start()
+			sync_logger.info('Watching ' + settings['local_path'])
+			now = datetime.datetime.now()
+			print now.strftime("\nNow syncing - %m/%d/%Y %I:%M %p %Ss - CTRL+C to exit.")
+			print seperator
+		else:
+			sys.exit()
+	elif settings['port'] == 21:
+		ftp_client = ftputil.FTPHost(settings['host'], settings['username'], settings['password'])
+		if ftp_client:
+			print 'Connected!'
+			print ' Local Folder: '  + settings['local_path']
+			print 'Remote Server: ssh://' + settings['username'] + '@' + settings['host'] + ':' + str(settings['port'])
+			print 'Remote Folder: ' + settings['remote_path']
+			ftp_client.chdir(settings['remote_path'])
+			event_handler = FileEventHandler(ftp_client=ftp_client)
+			observer = Observer()
+			observer.schedule(event_handler, settings['local_path'], recursive=True)
+			observer.start()
+			sync_logger.info('Watching ' + settings['local_path'])
+			now = datetime.datetime.now()
+			print now.strftime("\nNow syncing - %m/%d/%Y %I:%M %p %Ss - CTRL+C to exit.")
+			print seperator
+
 
 	try:
 		while True:
 			time.sleep(1)
 	except KeyboardInterrupt:
-		ssh_client.close()
+		if settings['port'] == 22:
+			ssh_client.close()
+		elif settings['port'] == 21:
+			ftp_client.close()
+
+		
 		observer.stop()
 	
 	observer.join()
