@@ -1,5 +1,5 @@
 [MyProject1]
-local_path    = C:/dev/MyProject1
+local_path    = C:\dev\MyProject1
 remote_path   = /var/www/MyProject1
 host          = 69.56.122.18
 port          = 22
@@ -8,19 +8,19 @@ private_key   =
 password      = 
 
 [MyProject2]
-local_path    = C:/dev/MyProject2
+local_path    = C:\dev\MyProject2
 remote_path   = /var/www/MyProject2
 host          = 10.0.0.18
-port          = 22
-username      = foo
-private_key   = 
-password      = bar
-
-[MyOtherProjectLOL]
-local_path    = C:/dev/MyOtherProject
-remote_path   = /home/orbitrix/www/snakebyte.net/MyOtherProjectLOL
-host          = snakebyte.net
 port          = 22
 username      = alex
 private_key   = C:/user/yourname/documents/my-private-key.ppk
 password      = 
+
+[MyOtherProjectLOL]
+local_path    = C:\dev\MyOtherProject
+remote_path   = /home/orbitrix/www/snakebyte.net/MyOtherProjectLOL
+host          = snakebyte.net
+port          = 22
+username      = foo
+private_key   = 
+password      = bar
