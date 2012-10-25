@@ -133,16 +133,15 @@ class FileEventHandler(FileSystemEventHandler):
 			if type(event) == watchdog.events.FileModifiedEvent:
 				localpath = event.src_path
 				remotepath = win_to_lin_path(event.src_path)
-
-				if sftp_is_file(self.ssh_client, remotepath):
-					if settings['port'] == 22:
-						self.sftp_client.put(localpath, remotepath)
-					else:
-						self.ftp_client.upload(localpath, remotepath)
-					sync_logger.info('Updated: %s', remotepath)
-					now = datetime.datetime.now()
-					print now.strftime("%I:%M.%S %p -"),
-					print 'Updated: ' + remotepath[len(settings['remote_path'])+1:]
+				if settings['port'] == 22:
+					if sftp_is_file(self.ssh_client, remotepath):
+							self.sftp_client.put(localpath, remotepath)
+				else:
+					self.ftp_client.upload(localpath, remotepath)
+				sync_logger.info('Updated: %s', remotepath)
+				now = datetime.datetime.now()
+				print now.strftime("%I:%M.%S %p -"),
+				print 'Updated: ' + remotepath[len(settings['remote_path'])+1:]
 			#if type(event) == watchdog.events.DirModifiedEvent:
 				#print "DOESNT WORK ON WINDOWS SEE: https://github.com/gorakhargosh/watchdog/issues/92"  
 
