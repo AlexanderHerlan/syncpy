@@ -204,15 +204,16 @@ class FileEventHandler(FileSystemEventHandler):
 
 			# Moving / Renaming
 			if type(event) == watchdog.events.FileMovedEvent:
-				 move_file(event, self.sftp_client, self.ssh_client)
+				move_file(event, self.sftp_client, self.ssh_client)
 			if type(event) == watchdog.events.DirMovedEvent:
 				move_directory(event, self.sftp_client, self.ssh_client)
 
 			# Deleting
 			if type(event) == watchdog.events.FileDeletedEvent:
 				delete_file(event, self.sftp_client, self.ssh_client)
-			#if type(event) == watchdog.events.DirDeletedEvent:
+			if type(event) == watchdog.events.DirDeletedEvent:
 				#print 'DOESNT WORK ON WINDOWS SEE: https://github.com/gorakhargosh/watchdog/issues/92'
+				delete_file(event, self.sftp_client, self.ssh_client)
 
 
 	def __del__(self):
