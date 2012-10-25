@@ -65,16 +65,17 @@ def sftp_is_file(ssh, path):
 def ignore_file(file_path, ignore_list):
 	"return 1 (true) if any of the ignore_list are in file_path"
 
-	if file_path.find('\\') != -1:
-		file_path = file_path[len(settings['local_path'])+1:]
-		path_elements = file_path.split('\\')
+	file_path = file_path[len(settings['local_path'])+1:]
+	path_elements = file_path.split('\\')
 
+	if file_path.find('\\') != -1:
 		if len(path_elements[len(path_elements)-1]) <= 4:
 			return 1
 
-		file_name = path_elements[len(path_elements)-1]
-		if file_name[:1] == '.':
-			return 1
+	# ignore weird linux file saving BS from certain apps (like gedit)
+	file_name = path_elements[len(path_elements)-1]
+	if file_name[:1] == '.':
+		return 1
 
 	for word in ignore_list:
 		if word in file_path:
