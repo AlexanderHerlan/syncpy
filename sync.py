@@ -128,35 +128,35 @@ def update_file(event, client, ssh):
 	print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
 	print Fore.YELLOW + Style.BRIGHT + 'Updated' + Fore.WHITE + Style.BRIGHT+ ': ' + remotepath[len(settings['remote_path'])+1:]
 
-def move_file(event, client):
+def move_file(event, client, ssh):
 	old_path = filter_path(win_to_lin_path(event.src_path), filter_list)
 	new_path = filter_path(win_to_lin_path(event.dest_path), filter_list)
 	cmd  = 'mv "' + old_path + '" "' + new_path + '"'
 	
 	if settings['port'] == 22:
-		client.exec_command(cmd)
+		ssh.exec_command(cmd)
 
 	sync_logger.info('Moved: %s', old_path)
 	now = datetime.datetime.now()
 	print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
-	print '  Moved: ' + old_path[len(settings['remote_path'])+1:]
+	print '  ' + Fore.CYAN + Style.BRIGHT  + 'Moved' + Fore.WHITE + ': ' + old_path[len(settings['remote_path'])+1:]
 	sync_logger.info('   to: %s', new_path)
-	print '            -      to: ' + new_path[len(settings['remote_path'])+1:]
+	print Fore.WHITE + Style.DIM +'            -      '+ Fore.CYAN + Style.BRIGHT +'to'+ Fore.WHITE +': ' + new_path[len(settings['remote_path'])+1:]
 
-def move_directory(event, client):
+def move_directory(event, client, ssh):
 	old_path = filter_path(win_to_lin_path(event.src_path), filter_list)
 	new_path = filter_path(win_to_lin_path(event.dest_path), filter_list)
 	cmd  = 'mv "' + old_path + '" "' + new_path + '"'
 
 	if settings['port'] == 22:
-		client.exec_command(cmd)
+		ssh.exec_command(cmd)
 
 	sync_logger.info('Moved: %s', old_path)
 	now = datetime.datetime.now()
 	print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
-	print '  Moved: ' + old_path[len(remote_path)+1:]
+	print '  ' + Fore.CYAN + Style.BRIGHT  + 'Moved' + Fore.WHITE + ': ' + old_path[len(settings['remote_path'])+1:]
 	sync_logger.info('   to: %s', new_path)
-	print '            -      to: ' + new_path[len(settings['remote_path'])+1:]
+	print Fore.WHITE + Style.DIM +'            -      '+ Fore.CYAN + Style.BRIGHT +'to'+ Fore.WHITE +': ' + new_path[len(settings['remote_path'])+1:]
 
 def delete_file(event, client, ssh):
 	old_file = win_to_lin_path(event.src_path)
@@ -204,9 +204,9 @@ class FileEventHandler(FileSystemEventHandler):
 
 			# Moving / Renaming
 			if type(event) == watchdog.events.FileMovedEvent:
-				 move_file(event, self.sftp_client)
+				 move_file(event, self.sftp_client, self.ssh_client)
 			if type(event) == watchdog.events.DirMovedEvent:
-				move_directory(event, self.sftp_client)
+				move_directory(event, self.sftp_client, self.ssh_client)
 
 			# Deleting
 			if type(event) == watchdog.events.FileDeletedEvent:
