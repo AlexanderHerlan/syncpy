@@ -91,7 +91,7 @@ def create_file(event, client):
 	remotepath = filter_path(win_to_lin_path(localpath), filter_list)
 	# Wait some time before uploading the file because some 
 	# apps do weird stuff to files as they're being saved.
-	time.sleep(2)
+	time.sleep(1.2)
 	if file_exists(localpath):
 		if settings['port'] == 22:
 			client.put(localpath, remotepath)
@@ -160,20 +160,11 @@ def move_directory(event, client):
 
 def delete_file(event, client, ssh):
 	old_file = win_to_lin_path(event.src_path)
-	"""
-	try:
-		client.remove(old_file)
-		sync_logger.info('Deleted: %s', old_file)
-		now = datetime.datetime.now()
-		print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
-		print Fore.RED + Style.BRIGHT + 'Deleted' + Style.RESET_ALL + Fore.WHITE + Style.BRIGHT + ': ' + old_file[len(settings['remote_path'])+1:]
-	except Exception as e:
-	"""
 	if settings['port'] == 22:
 		if sftp_exists(client, old_file):
 			ssh.exec_command('rm -r "' + old_file + '"')
 		else:
-			sync_logger.warning('Folder does not exist: %s', old_file)
+			sync_logger.warning('Folder or file does not exist: %s', old_file)
 	else:
 		client.rmdir(old_file)
 
