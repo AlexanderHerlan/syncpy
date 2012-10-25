@@ -13,12 +13,13 @@ import datetime
 import ConfigParser
 import watchdog
 import paramiko
+import ftputil
+from colorama import init as color_init
+from colorama import Fore, Back, Style
 from watchdog.observers import Observer
 from watchdog.events import LoggingEventHandler
 from watchdog.events import FileSystemEventHandler
 from ftplib import FTP
-import ftputil
-
 
 # File names to ignore like temporary files forphotoshop saves or for ignoring GIT completely
 ignore_list = ['_tmp', '.git', '.tmp']
@@ -85,6 +86,102 @@ def filter_path(path, filter):
 	return path
 
 
+def create_file(event, client):
+	localpath = filter_path(event.src_path, filter_list)
+	remotepath = filter_path(win_to_lin_path(localpath), filter_list)
+	# Wait some time before uploading the file because some 
+	# apps do weird stuff to files as they're being saved.
+	time.sleep(2)
+	if file_exists(localpath):
+		if settings['port'] == 22:
+			client.put(localpath, remotepath)
+		else:
+			client.upload(localpath, remotepath)
+		sync_logger.info('Created File: %s', remotepath)
+		now = datetime.datetime.now()
+		print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
+		print Fore.GREEN + Style.BRIGHT + 'Created' + Fore.WHITE + ': ' + remotepath[len(settings['remote_path'])+1:]
+
+def create_directory(event, client):
+	new_directory = win_to_lin_path(event.src_path)
+
+	if settings['port'] == 22:
+		client.mkdir(new_directory)
+	else:
+		client.mkdir(new_directory)
+
+	sync_logger.info('Created Folder: %s', new_directory)
+	now = datetime.datetime.now()
+	print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
+	print Fore.GREEN + Style.BRIGHT + 'Created' + Fore.WHITE + ': ' + new_directory[len(settings['remote_path'])+1:]
+
+def update_file(event, client, ssh):
+	localpath = event.src_path
+	remotepath = win_to_lin_path(event.src_path)
+	if settings['port'] == 22:
+		if sftp_is_file(ssh, remotepath):
+				client.put(localpath, remotepath)
+	else:
+		client.upload(localpath, remotepath)
+	sync_logger.info('Updated: %s', remotepath)
+	now = datetime.datetime.now()
+	print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
+	print Fore.YELLOW + Style.BRIGHT + 'Updated' + Fore.RESET + Style.BRIGHT+ ': ' + remotepath[len(settings['remote_path'])+1:]
+
+def move_file(event, client):
+	old_path = filter_path(win_to_lin_path(event.src_path), filter_list)
+	new_path = filter_path(win_to_lin_path(event.dest_path), filter_list)
+	cmd  = 'mv "' + old_path + '" "' + new_path + '"'
+	
+	if settings['port'] == 22:
+		client.exec_command(cmd)
+
+	sync_logger.info('Moved: %s', old_path)
+	now = datetime.datetime.now()
+	print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
+	print '  Moved: ' + old_path[len(settings['remote_path'])+1:]
+	sync_logger.info('   to: %s', new_path)
+	print '            -      to: ' + new_path[len(settings['remote_path'])+1:]
+
+def move_directory(event, client):
+	old_path = filter_path(win_to_lin_path(event.src_path), filter_list)
+	new_path = filter_path(win_to_lin_path(event.dest_path), filter_list)
+	cmd  = 'mv "' + old_path + '" "' + new_path + '"'
+
+	if settings['port'] == 22:
+		client.exec_command(cmd)
+
+	sync_logger.info('Moved: %s', old_path)
+	now = datetime.datetime.now()
+	print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
+	print '  Moved: ' + old_path[len(remote_path)+1:]
+	sync_logger.info('   to: %s', new_path)
+	print '            -      to: ' + new_path[len(settings['remote_path'])+1:]
+
+def delete_file(event, client, ssh):
+	old_file = win_to_lin_path(event.src_path)
+
+	try:
+		client.remove(old_file)
+		sync_logger.info('Deleted: %s', old_file)
+		now = datetime.datetime.now()
+		print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
+		print Fore.RED + Style.BRIGHT + 'Deleted' + Style.RESET_ALL + Fore.WHITE + Style.BRIGHT + ': ' + old_file[len(settings['remote_path'])+1:]
+	except Exception as e:
+		if settings['port'] == 22:
+			if sftp_exists(client, old_file):
+				ssh.exec_command('rm -r "' + old_file + '"')
+			else:
+				sync_logger.warning('Folder does not exist: %s', old_file)
+		else:
+			client.rmdir(old_file)
+
+		sync_logger.info('Deleted Folder: %s', old_file)
+		now = datetime.datetime.now()
+		print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
+		print Fore.RED + Style.BRIGHT + 'Deleted' + Style.RESET_ALL + Fore.WHITE + Style.BRIGHT + ': ' + old_file[len(settings['remote_path'])+1:]	
+
+
 #class FileEventHandler(FileSystemEventHandler):
 class FileEventHandler(FileSystemEventHandler):
 	
@@ -101,107 +198,27 @@ class FileEventHandler(FileSystemEventHandler):
 
 			# Creating
 			if type(event) == watchdog.events.FileCreatedEvent:
-				localpath = filter_path(event.src_path, filter_list)
-				remotepath = filter_path(win_to_lin_path(localpath), filter_list)
-				# Wait some time before uploading the file because some 
-				# apps do weird stuff to files as they're being saved.
-				time.sleep(1)
-				if file_exists(localpath):
-					if settings['port'] == 22:
-						self.sftp_client.put(localpath, remotepath)
-					else:
-						self.ftp_client.upload(localpath, remotepath)
-					sync_logger.info('Created File: %s', remotepath)
-					now = datetime.datetime.now()
-					print now.strftime("%I:%M.%S %p -"),
-					print 'Created: ' + remotepath[len(settings['remote_path'])+1:]
+				create_file(event, self.sftp_client)
+
 			if type(event) == watchdog.events.DirCreatedEvent:
-				new_directory = win_to_lin_path(event.src_path)
-
-				if settings['port'] == 22:
-					self.sftp_client.mkdir(new_directory)
-				else:
-					self.ftp_client.mkdir(new_directory)
-
-				sync_logger.info('Created Folder: %s', new_directory)
-				now = datetime.datetime.now()
-				print now.strftime("%I:%M.%S %p -"),
-				print 'Created: ' + new_directory[len(settings['remote_path'])+1:]
-
+				create_directory(event, self.sftp_client)
 
 			# Updating
 			if type(event) == watchdog.events.FileModifiedEvent:
-				localpath = event.src_path
-				remotepath = win_to_lin_path(event.src_path)
-				if settings['port'] == 22:
-					if sftp_is_file(self.ssh_client, remotepath):
-							self.sftp_client.put(localpath, remotepath)
-				else:
-					self.ftp_client.upload(localpath, remotepath)
-				sync_logger.info('Updated: %s', remotepath)
-				now = datetime.datetime.now()
-				print now.strftime("%I:%M.%S %p -"),
-				print 'Updated: ' + remotepath[len(settings['remote_path'])+1:]
+				update_file(event, self.sftp_client, self.ssh_client)
+
 			#if type(event) == watchdog.events.DirModifiedEvent:
 				#print "DOESNT WORK ON WINDOWS SEE: https://github.com/gorakhargosh/watchdog/issues/92"  
 
-
 			# Moving / Renaming
 			if type(event) == watchdog.events.FileMovedEvent:
-				if not ignore_file(event.dest_path, ignore_list):
-					old_path = filter_path(win_to_lin_path(event.src_path), filter_list)
-					new_path = filter_path(win_to_lin_path(event.dest_path), filter_list)
-					cmd  = 'mv "' + old_path + '" "' + new_path + '"'
-					self.ssh_client.exec_command(cmd)
-
-					sync_logger.info('Moved: %s', old_path)
-					now = datetime.datetime.now()
-					print now.strftime("%I:%M.%S %p -"),
-					print '  Moved: ' + old_path[len(settings['remote_path'])+1:]
-					sync_logger.info('   to: %s', new_path)
-					print '            -      to: ' + new_path[len(settings['remote_path'])+1:]
+				 move_file(event, self.sftp_client)
 			if type(event) == watchdog.events.DirMovedEvent:
-				if not ignore_file(event.dest_path, ignore_list):
-					old_path = filter_path(win_to_lin_path(event.src_path), filter_list)
-					new_path = filter_path(win_to_lin_path(event.dest_path), filter_list)
-					cmd  = 'mv "' + old_path + '" "' + new_path + '"'
-					self.ssh_client.exec_command(cmd)
-
-					sync_logger.info('Moved: %s', old_path)
-					now = datetime.datetime.now()
-					print now.strftime("%I:%M.%S %p -"),
-					print '  Moved: ' + old_path[len(remote_path)+1:]
-					sync_logger.info('   to: %s', new_path)
-					print '            -      to: ' + new_path[len(settings['remote_path'])+1:]
-
+				move_directory(event, self.sftp_client)
 
 			# Deleting
 			if type(event) == watchdog.events.FileDeletedEvent:
-				old_file = win_to_lin_path(event.src_path)
-
-				try:
-					if settings['port'] == 22:
-						self.sftp_client.remove(old_file)
-					else:
-						self.ftp_client.remove(old_file)
-					
-					sync_logger.info('Deleted: %s', old_file)
-					now = datetime.datetime.now()
-					print now.strftime("%I:%M.%S %p -"),
-					print 'Deleted: ' + old_file[len(settings['remote_path'])+1:]
-				except Exception as e:
-					if settings['port'] == 22:
-						if sftp_exists(self.sftp_client, old_file):
-							self.ssh_client.exec_command('rm -r "' + old_file + '"')
-						else:
-							sync_logger.warning('Folder does not exist: %s', old_file)
-					else:
-						self.ftp_client.rmdir(old_file)
-
-					sync_logger.info('Deleted Folder: %s', old_file)
-					now = datetime.datetime.now()
-					print now.strftime("%I:%M.%S %p -"),
-					print 'Deleted: ' + old_file[len(settings['remote_path'])+1:]
+				delete_file(event, self.sftp_client, self.ssh_client)
 			#if type(event) == watchdog.events.DirDeletedEvent:
 				#print 'DOESNT WORK ON WINDOWS SEE: https://github.com/gorakhargosh/watchdog/issues/92'
 
@@ -287,9 +304,13 @@ def file_exists(PATH):
 -----------------------------------------------------------------------------------------------------------------------
 """
 
-seperator = '-------------------------------------------------------------------------------'
+seperator = Fore.GREEN + Style.DIM + '-------------------------------------------------------------------------------' + Fore.WHITE + Style.BRIGHT
+
 
 if __name__ == "__main__":
+
+	# init colorama module
+	color_init(autoreset=False)
 
 	# Initialize python's logging facilities
 	logging.basicConfig(format=' %(asctime)s %(levelname)s %(message)s')
@@ -301,7 +322,7 @@ if __name__ == "__main__":
 	#paramiko.util.logging.basicConfig(level=logging.ERROR)
 
 	print seperator
-	print 'Welcome to sync.py'
+	print Fore.WHITE + Style.BRIGHT + 'Welcome to ' + Fore.GREEN + Style.BRIGHT + 'sync.py' + Fore.WHITE + Style.BRIGHT
 
 	# load external .config
 	if file_exists('./sync.config'):
@@ -321,7 +342,7 @@ if __name__ == "__main__":
 				i = 0
 				for project in project_list:
 					i += 1
-					print str(i) + ' - ' + project
+					print Fore.GREEN + Style.NORMAL + ' ' + str(i) + Fore.YELLOW + ' - ' + Fore.WHITE + Style.BRIGHT + project
 
 				print ' '
 
@@ -338,10 +359,10 @@ if __name__ == "__main__":
 					sys.exit()
 				else:
 					settings = load_config(project_list[project_select])
-					print "Loading project: " + project_list[project_select]
+					print Style.DIM + "Loading project: " + Style.BRIGHT + project_list[project_select]
 			else:
 				if len(project_list) >= 1:
-					print "Loading project: " + project_list[0]
+					print Style.DIM + "Loading project: " + Style.BRIGHT + project_list[0]
 					settings = load_config(project_list[0])
 					project_list[0]
 				else:
@@ -353,7 +374,7 @@ if __name__ == "__main__":
 			settings = load_config(sys.argv[1])
 
 			if settings != False:
-				print "Loading project: " + sys.argv[1]
+				print Style.DIM + "Loading project: " + Style.BRIGHT + sys.argv[1]
 			else:
 				print "Project name '" + sys.argv[1] + "' not found."
 				print "Please make sure your sync.config file is configured properly"
@@ -377,16 +398,16 @@ if __name__ == "__main__":
 		if auth_user(ssh_client, settings['username']) == True:
 			sync_logger.info('Connected to ssh://' + settings['username'] + '@' + settings['host'] + ':' + str(settings['port']) + settings['remote_path'])
 			print 'Connected!'
-			print ' Local Folder: '  + settings['local_path']
-			print 'Remote Server: ssh://' + settings['username'] + '@' + settings['host'] + ':' + str(settings['port'])
-			print 'Remote Folder: ' + settings['remote_path']
+			print Style.DIM + ' Local Folder: ' + Style.BRIGHT + settings['local_path']
+			print Style.DIM + 'Remote Server: ' + Style.BRIGHT + 'ssh://' + settings['username'] + '@' + settings['host'] + ':' + str(settings['port'])
+			print Style.DIM + 'Remote Folder: ' + Style.BRIGHT + settings['remote_path']
 			event_handler = FileEventHandler(ssh_client=ssh_client)
 			observer = Observer()
 			observer.schedule(event_handler, settings['local_path'], recursive=True)
 			observer.start()
 			sync_logger.info('Watching ' + settings['local_path'])
 			now = datetime.datetime.now()
-			print now.strftime("\nNow syncing - %m/%d/%Y %I:%M %p %Ss - CTRL+C to exit.")
+			print "\n" + Fore.GREEN + "Now syncing" + Fore.WHITE + now.strftime(" - %m/%d/%Y %I:%M %p %Ss - ") + Fore.RED + Style.BRIGHT + "CTRL+C to exit."
 			print seperator
 		else:
 			sys.exit()
@@ -404,7 +425,7 @@ if __name__ == "__main__":
 			observer.start()
 			sync_logger.info('Watching ' + settings['local_path'])
 			now = datetime.datetime.now()
-			print now.strftime("\nNow syncing - %m/%d/%Y %I:%M %p %Ss - CTRL+C to exit.")
+			print now.strftime("\nNow syncing - %m/%d/%Y %I:%M %p %Ss - ") + Fore.RED + Style.BRIGHT + "CTRL+C to exit."
 			print seperator
 
 

@@ -18,10 +18,10 @@ System Requirements / Dependencies
 Please remember to use a python package manager like easy_install, pip or distribute (except for with PyCrypto on windows) to install the following python packages: 
 
 * [PyCrypto](https://www.dlitz.net/software/pycrypto/)  (This package can sometimes be problematic on windows.  It cannot be installed through most package management systems like easy_install pip etc [wtf python community?].  I recommend installing a pre-compiled binary that matches the correct python 2.7 version [from here](http://www.voidspace.org.uk/python/modules.shtml#pycrypto).  Linux folks have it easy on this one, just install with a package manager.)
-* [paramiko](http://www.lag.net/paramiko/)
+* [paramiko](http://www.lag.net/paramiko/) Must be version 1.8+.  If you have any errors from paramiko make sure you have the latest version in your site-packages folder.
 * [ftputil](http://ftputil.sschwarzer.net/trac)
 * [watchdog](http://pypi.python.org/pypi/watchdog)
-
+* [colorama](http://pypi.python.org/pypi/colorama)
 
 Understanding the .config file
 ------------------------------
