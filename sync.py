@@ -126,7 +126,7 @@ def update_file(event, client, ssh):
 	sync_logger.info('Updated: %s', remotepath)
 	now = datetime.datetime.now()
 	print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
-	print Fore.YELLOW + Style.BRIGHT + 'Updated' + Fore.RESET + Style.BRIGHT+ ': ' + remotepath[len(settings['remote_path'])+1:]
+	print Fore.YELLOW + Style.BRIGHT + 'Updated' + Fore.WHITE + Style.BRIGHT+ ': ' + remotepath[len(settings['remote_path'])+1:]
 
 def move_file(event, client):
 	old_path = filter_path(win_to_lin_path(event.src_path), filter_list)
@@ -160,7 +160,7 @@ def move_directory(event, client):
 
 def delete_file(event, client, ssh):
 	old_file = win_to_lin_path(event.src_path)
-
+	"""
 	try:
 		client.remove(old_file)
 		sync_logger.info('Deleted: %s', old_file)
@@ -168,18 +168,19 @@ def delete_file(event, client, ssh):
 		print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
 		print Fore.RED + Style.BRIGHT + 'Deleted' + Style.RESET_ALL + Fore.WHITE + Style.BRIGHT + ': ' + old_file[len(settings['remote_path'])+1:]
 	except Exception as e:
-		if settings['port'] == 22:
-			if sftp_exists(client, old_file):
-				ssh.exec_command('rm -r "' + old_file + '"')
-			else:
-				sync_logger.warning('Folder does not exist: %s', old_file)
+	"""
+	if settings['port'] == 22:
+		if sftp_exists(client, old_file):
+			ssh.exec_command('rm -r "' + old_file + '"')
 		else:
-			client.rmdir(old_file)
+			sync_logger.warning('Folder does not exist: %s', old_file)
+	else:
+		client.rmdir(old_file)
 
-		sync_logger.info('Deleted Folder: %s', old_file)
-		now = datetime.datetime.now()
-		print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
-		print Fore.RED + Style.BRIGHT + 'Deleted' + Style.RESET_ALL + Fore.WHITE + Style.BRIGHT + ': ' + old_file[len(settings['remote_path'])+1:]	
+	sync_logger.info('Deleted File: %s', old_file)
+	now = datetime.datetime.now()
+	print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
+	print Fore.RED + Style.BRIGHT + 'Deleted' + Style.RESET_ALL + Fore.WHITE + Style.BRIGHT + ': ' + old_file[len(settings['remote_path'])+1:]	
 
 
 #class FileEventHandler(FileSystemEventHandler):
