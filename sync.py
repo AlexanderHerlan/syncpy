@@ -72,6 +72,10 @@ def ignore_file(file_path, ignore_list):
 		if len(path_elements[len(path_elements)-1]) <= 4:
 			return 1
 
+		file_name = path_elements[len(path_elements)-1]
+		if file_name[:1] == '.':
+			return 1
+
 	for word in ignore_list:
 		if word in file_path:
 			#print now.strftime("%I:%M.%S %p -"),
