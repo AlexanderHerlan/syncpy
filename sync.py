@@ -356,8 +356,9 @@ if __name__ == "__main__":
 					print seperator
 					sys.exit()
 				else:
+					print Fore.RESET
 					settings = load_config(project_list[project_select])
-					print Style.DIM + "Loading project: " + Style.BRIGHT + project_list[project_select]
+					print Fore.WHITE + Style.DIM + "Loading project: " + Style.BRIGHT + project_list[project_select]
 			else:
 				if len(project_list) >= 1:
 					print Style.DIM + "Loading project: " + Style.BRIGHT + project_list[0]
