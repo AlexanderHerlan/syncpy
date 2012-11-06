@@ -17,7 +17,7 @@ System Requirements / Dependencies
 You can use a python package manager like easy_install, pip or distribute (except for with PyCrypto on Windows) to install the following python packages: 
 
 * [PyCrypto](https://www.dlitz.net/software/pycrypto/)  (This package can sometimes be problematic on windows.  It cannot be installed through most package management systems like easy_install pip etc.  I recommend installing a pre-compiled binary that matches the correct python 2.7 version [from here](http://www.voidspace.org.uk/python/modules.shtml#pycrypto).  Linux folks have it easy, just install it with any python package manager.)
-* [paramiko](http://www.lag.net/paramiko/) Must be version 1.8+.
+* [paramiko](http://pypi.python.org/pypi/paramiko/1.8.0) Must be version 1.8+.
 * [ftputil](http://ftputil.sschwarzer.net/trac)
 * [watchdog](http://pypi.python.org/pypi/watchdog)
 * [colorama](http://pypi.python.org/pypi/colorama)
