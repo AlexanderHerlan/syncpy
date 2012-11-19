@@ -91,34 +91,48 @@ def filter_path(path, filter):
 	return path
 
 
-def create_file(event, client):
+def create_file(event, client, ssh):
 	localpath = filter_path(event.src_path, filter_list)
 	remotepath = filter_path(win_to_lin_path(localpath), filter_list)
 	# Wait some time before uploading the file because some 
 	# apps do weird stuff to files as they're being saved.
 	time.sleep(1.2)
-	if file_exists(localpath):
-		if settings['port'] == 22:
-			client.put(localpath, remotepath)
-		else:
-			client.upload(localpath, remotepath)
-		sync_logger.info('Created File: %s', remotepath)
-		now = datetime.datetime.now()
-		print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
-		print Fore.GREEN + Style.BRIGHT + 'Created' + Fore.WHITE + ': ' + remotepath[len(settings['remote_path'])+1:]
+	if local_file_exists(localpath):
+		if not remote_file_exists(client, remotepath, ssh):
+			if settings['port'] == 22:
+				client.put(localpath, remotepath)
+			else:
+				client.upload(localpath, remotepath)
 
-def create_directory(event, client):
+			sync_logger.info('Created File: %s', remotepath)
+			now = datetime.datetime.now()
+			print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
+			print Fore.GREEN + Style.BRIGHT + 'Created' + Fore.WHITE + ': ' + remotepath[len(settings['remote_path'])+1:]
+		else:
+			now = datetime.datetime.now()
+			print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
+			print Style.BRIGHT + Fore.RED + 'File \'' + Fore.WHITE + remotepath[len(settings['remote_path'])+1:] + Style.BRIGHT + Fore.RED + '\' already exists.'
+
+def create_directory(event, client, ssh):
 	new_directory = win_to_lin_path(event.src_path)
+	now = datetime.datetime.now()
 
 	if settings['port'] == 22:
-		client.mkdir(new_directory)
+		if remote_directory_exists(client, new_directory, ssh):
+			print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
+			print Fore.RED + Style.BRIGHT + 'Warning: Directory' + Fore.WHITE + ' \'' + new_directory[len(settings['remote_path'])+1:] + '\' ' + Fore.RED + 'already exists on server.'
+		else:
+			client.mkdir(new_directory)
+			print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
+			print Fore.GREEN + Style.BRIGHT + 'Created' + Fore.WHITE + ': ' + new_directory[len(settings['remote_path'])+1:]
 	else:
 		client.mkdir(new_directory)
+		print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
+		print Fore.GREEN + Style.BRIGHT + 'Created' + Fore.WHITE + ': ' + new_directory[len(settings['remote_path'])+1:]
 
 	sync_logger.info('Created Folder: %s', new_directory)
-	now = datetime.datetime.now()
-	print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
-	print Fore.GREEN + Style.BRIGHT + 'Created' + Fore.WHITE + ': ' + new_directory[len(settings['remote_path'])+1:]
+
+
 
 def update_file(event, client, ssh):
 	localpath = event.src_path
@@ -195,10 +209,10 @@ class FileEventHandler(FileSystemEventHandler):
 
 			# Creating
 			if type(event) == watchdog.events.FileCreatedEvent:
-				create_file(event, self.sftp_client)
+				create_file(event, self.sftp_client, self.ssh_client)
 
 			if type(event) == watchdog.events.DirCreatedEvent:
-				create_directory(event, self.sftp_client)
+				create_directory(event, self.sftp_client, self.ssh_client)
 
 			# Updating
 			if type(event) == watchdog.events.FileModifiedEvent:
@@ -268,7 +282,6 @@ def auth_user(ssh_client, username):
 		sync_logger.info('Please properly configure your sync.py header variables and try again.')
 		return False
 
-
 def load_config(project):
 	if project in Config.sections():
 		dict1 = {}
@@ -287,9 +300,32 @@ def load_config(project):
 		return dict1
 	else:
 		return False
+	return False
 
 
-def file_exists(PATH):
+def remote_file_exists(sftp, path, ssh):
+    """os.path.exists for paramiko's SCP object
+    """
+    try:
+        sftp.stat(path)
+    except IOError, e:
+        if e[0] == 2:
+            return False
+        raise
+    else:
+        return True
+
+def remote_directory_exists(sftp, path, ssh):
+	cmd = 'test -d \''+path+'\' && echo "true" || echo "false"'
+	stdin, stdout, stderr = ssh.exec_command(cmd)
+	output = str(stdout.readlines())
+
+	if 'false' in output:
+		return False
+	else:
+		return True
+
+def local_file_exists(PATH):
 	if os.path.exists(PATH) and os.path.isfile(PATH) and os.access(PATH, os.R_OK):
 		return True
 	else:
@@ -323,7 +359,7 @@ if __name__ == "__main__":
 	print Fore.WHITE + Style.BRIGHT + 'Welcome to ' + Fore.GREEN + Style.BRIGHT + 'sync.py' + Fore.WHITE + Style.BRIGHT
 
 	# load external .config
-	if file_exists('./sync.config'):
+	if local_file_exists('./sync.config'):
 		# If the config file is found Initialize python's config parser
 		Config = ConfigParser.ConfigParser()
 		Config.read("sync.config")
