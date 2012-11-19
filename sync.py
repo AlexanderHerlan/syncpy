@@ -111,7 +111,7 @@ def create_file(event, client, ssh):
 		else:
 			now = datetime.datetime.now()
 			print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
-			print Style.BRIGHT + Fore.RED + 'File \'' + Fore.WHITE + remotepath[len(settings['remote_path'])+1:] + Style.BRIGHT + Fore.RED + '\' already exists.'
+			print Style.BRIGHT + Fore.RED + 'Warning: remote file \'' + Fore.WHITE + remotepath[len(settings['remote_path'])+1:] + Style.BRIGHT + Fore.RED + '\' already exists.'
 
 def create_directory(event, client, ssh):
 	new_directory = win_to_lin_path(event.src_path)
@@ -120,7 +120,7 @@ def create_directory(event, client, ssh):
 	if settings['port'] == 22:
 		if remote_directory_exists(client, new_directory, ssh):
 			print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
-			print Fore.RED + Style.BRIGHT + 'Warning: Directory' + Fore.WHITE + ' \'' + new_directory[len(settings['remote_path'])+1:] + '\' ' + Fore.RED + 'already exists on server.'
+			print Fore.RED + Style.BRIGHT + 'Warning: remote drectory' + Fore.WHITE + ' \'' + new_directory[len(settings['remote_path'])+1:] + '\' ' + Fore.RED + 'already exists.'
 		else:
 			client.mkdir(new_directory)
 			print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
@@ -137,30 +137,46 @@ def create_directory(event, client, ssh):
 def update_file(event, client, ssh):
 	localpath = event.src_path
 	remotepath = win_to_lin_path(event.src_path)
-	if settings['port'] == 22:
-		if sftp_is_file(ssh, remotepath):
-				client.put(localpath, remotepath)
-	else:
-		client.upload(localpath, remotepath)
-	sync_logger.info('Updated: %s', remotepath)
 	now = datetime.datetime.now()
-	print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
-	print Fore.YELLOW + Style.BRIGHT + 'Updated' + Fore.WHITE + Style.BRIGHT+ ': ' + remotepath[len(settings['remote_path'])+1:]
+
+	if settings['port'] == 22:
+		if local_file_exists(localpath):
+			if sftp_is_file(ssh, remotepath):
+				client.put(localpath, remotepath)
+				print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
+				print Fore.YELLOW + Style.BRIGHT + 'Updated' + Fore.WHITE + Style.BRIGHT+ ': ' + remotepath[len(settings['remote_path'])+1:]
+			else:
+				print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
+				print Fore.RED + Style.BRIGHT + 'Warning: remote file \'' + Fore.WHITE + Style.BRIGHT + remotepath[len(settings['remote_path'])+1:] + Fore.RED + '\' not found.  Creating...'
+				create_file(event, client, ssh)
+
+	else:
+		if local_file_exists(localpath):
+			client.upload(localpath, remotepath)
+			print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
+			print Fore.YELLOW + Style.BRIGHT + 'Updated' + Fore.WHITE + Style.BRIGHT+ ': ' + remotepath[len(settings['remote_path'])+1:]
+
+	sync_logger.info('Updated: %s', remotepath)
+	
+
 
 def move_file(event, client, ssh):
 	old_path = filter_path(win_to_lin_path(event.src_path), filter_list)
 	new_path = filter_path(win_to_lin_path(event.dest_path), filter_list)
 	cmd  = 'mv "' + old_path + '" "' + new_path + '"'
-	
-	if settings['port'] == 22:
-		ssh.exec_command(cmd)
-
-	sync_logger.info('Moved: %s', old_path)
 	now = datetime.datetime.now()
-	print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
-	print '  ' + Fore.CYAN + Style.BRIGHT  + 'Moved' + Fore.WHITE + ': ' + old_path[len(settings['remote_path'])+1:]
-	sync_logger.info('   to: %s', new_path)
-	print Fore.WHITE + Style.DIM +'            -      '+ Fore.CYAN + Style.BRIGHT +'to'+ Fore.WHITE +': ' + new_path[len(settings['remote_path'])+1:]
+
+	if settings['port'] == 22:
+		if remote_file_exists(client, old_path, ssh):
+			ssh.exec_command(cmd)
+			sync_logger.info('Moved: %s', old_path)
+			print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
+			print '  ' + Fore.CYAN + Style.BRIGHT  + 'Moved' + Fore.WHITE + ': ' + old_path[len(settings['remote_path'])+1:]
+			sync_logger.info('   to: %s', new_path)
+			print Fore.WHITE + Style.DIM +'            -      '+ Fore.CYAN + Style.BRIGHT +'to'+ Fore.WHITE +': ' + new_path[len(settings['remote_path'])+1:]
+		else:
+			print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
+			print 'warning: remote file ' + old_path + ' not found.'
 
 def move_directory(event, client, ssh):
 	old_path = filter_path(win_to_lin_path(event.src_path), filter_list)
@@ -304,16 +320,16 @@ def load_config(project):
 
 
 def remote_file_exists(sftp, path, ssh):
-    """os.path.exists for paramiko's SCP object
-    """
-    try:
-        sftp.stat(path)
-    except IOError, e:
-        if e[0] == 2:
-            return False
-        raise
-    else:
-        return True
+	"""os.path.exists for paramiko's SCP object
+	"""
+	try:
+		sftp.stat(path)
+	except IOError, e:
+		if e[0] == 2:
+			return False
+		raise
+	else:
+		return True
 
 def remote_directory_exists(sftp, path, ssh):
 	cmd = 'test -d \''+path+'\' && echo "true" || echo "false"'
