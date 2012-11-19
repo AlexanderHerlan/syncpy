@@ -26,6 +26,46 @@ ignore_list = ['_tmp', '.git', '.tmp']
 # strings to remove from file operations
 filter_list = ['.crdownload']
 
+def console(message,  event = 'Message', event_object = ''):
+
+	now = datetime.datetime.now()
+	print Style.DIM + Fore.WHITE + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
+
+	# Coloring
+	output = Style.BRIGHT
+	if event == 'Message' or event == 'Updated':
+		output = output + Fore.YELLOW
+	elif event == 'Created':
+		output = output + Fore.GREEN
+	elif event == 'Deleted' or event == 'Warning':
+		output = output + Fore.RED
+	elif event == 'Moved':
+		output = output + Fore.CYAN
+
+	# Special formatting for certain events
+	if event == 'Moved':
+		old_path = win_to_lin_path(event_object.src_path)
+		old_path = old_path[len(settings['remote_path'])+1:]
+		new_path = win_to_lin_path(event_object.dest_path)
+		new_path = new_path[len(settings['remote_path'])+1:]
+
+		output = output + '  ' + event + Style.RESET_ALL + Fore.WHITE
+
+		output = output + ": " + old_path + '\n' + '            -      ' + Fore.CYAN + Style.BRIGHT +'to'+ Fore.WHITE +': ' + new_path + Style.RESET_ALL
+	else:
+		remotepath = win_to_lin_path(event_object.src_path)
+		remotepath = remotepath[len(settings['remote_path'])+1:]
+
+		output = output + event + Style.RESET_ALL + Style.DIM + Fore.WHITE
+
+		if message == '':
+			output = output + ': ' + Style.BRIGHT + remotepath + Style.DIM
+		else:
+			output = output + ': ' + Style.BRIGHT + remotepath + Style.DIM + ' ' + message
+
+	return output
+
+
 def win_to_lin_path(file_or_directory):
 	
 	if file_or_directory != "":
@@ -94,6 +134,7 @@ def filter_path(path, filter):
 def create_file(event, client, ssh):
 	localpath = filter_path(event.src_path, filter_list)
 	remotepath = filter_path(win_to_lin_path(localpath), filter_list)
+
 	# Wait some time before uploading the file because some 
 	# apps do weird stuff to files as they're being saved.
 	time.sleep(1.2)
@@ -105,58 +146,46 @@ def create_file(event, client, ssh):
 				client.upload(localpath, remotepath)
 
 			sync_logger.info('Created File: %s', remotepath)
-			now = datetime.datetime.now()
-			print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
-			print Fore.GREEN + Style.BRIGHT + 'Created' + Fore.WHITE + ': ' + remotepath[len(settings['remote_path'])+1:]
+			print console('', 'Created', event)
 		else:
-			now = datetime.datetime.now()
-			print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
-			print Style.BRIGHT + Fore.RED + 'Warning: remote file \'' + Fore.WHITE + remotepath[len(settings['remote_path'])+1:] + Style.BRIGHT + Fore.RED + '\' already exists.'
+			print console('remote file already exists', 'Warning', event)
 
 def create_directory(event, client, ssh):
 	new_directory = win_to_lin_path(event.src_path)
-	now = datetime.datetime.now()
 
 	if settings['port'] == 22:
 		if remote_directory_exists(client, new_directory, ssh):
-			print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
-			print Fore.RED + Style.BRIGHT + 'Warning: remote drectory' + Fore.WHITE + ' \'' + new_directory[len(settings['remote_path'])+1:] + '\' ' + Fore.RED + 'already exists.'
+			print console('remote directory already exists', 'Warning', event)
 		else:
 			client.mkdir(new_directory)
-			print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
-			print Fore.GREEN + Style.BRIGHT + 'Created' + Fore.WHITE + ': ' + new_directory[len(settings['remote_path'])+1:]
+			print console('', 'Created', event)
+			sync_logger.info('Created Folder: %s', new_directory)
 	else:
 		client.mkdir(new_directory)
-		print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
-		print Fore.GREEN + Style.BRIGHT + 'Created' + Fore.WHITE + ': ' + new_directory[len(settings['remote_path'])+1:]
-
-	sync_logger.info('Created Folder: %s', new_directory)
+		print console('', 'Created', event)
+		sync_logger.info('Created Folder (FTP): %s', new_directory)
 
 
 
 def update_file(event, client, ssh):
 	localpath = event.src_path
 	remotepath = win_to_lin_path(event.src_path)
-	now = datetime.datetime.now()
 
 	if settings['port'] == 22:
 		if local_file_exists(localpath):
 			if sftp_is_file(ssh, remotepath):
 				client.put(localpath, remotepath)
-				print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
-				print Fore.YELLOW + Style.BRIGHT + 'Updated' + Fore.WHITE + Style.BRIGHT+ ': ' + remotepath[len(settings['remote_path'])+1:]
+				print console('', 'Updated', event)
+				sync_logger.info('Updated: %s', remotepath)
 			else:
-				print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
-				print Fore.RED + Style.BRIGHT + 'Warning: remote file \'' + Fore.WHITE + Style.BRIGHT + remotepath[len(settings['remote_path'])+1:] + Fore.RED + '\' not found.  Creating...'
+				print console('remote file not found', 'Warning', event)
+				print console('attempting to create file', 'Message', event)
 				create_file(event, client, ssh)
-
 	else:
 		if local_file_exists(localpath):
 			client.upload(localpath, remotepath)
-			print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
-			print Fore.YELLOW + Style.BRIGHT + 'Updated' + Fore.WHITE + Style.BRIGHT+ ': ' + remotepath[len(settings['remote_path'])+1:]
-
-	sync_logger.info('Updated: %s', remotepath)
+			print console('', 'Updated', event)
+			sync_logger.info('Updated (FTP): %s', remotepath)
 	
 
 
@@ -169,14 +198,11 @@ def move_file(event, client, ssh):
 	if settings['port'] == 22:
 		if remote_file_exists(client, old_path, ssh):
 			ssh.exec_command(cmd)
+			print console('', 'Moved', event)
 			sync_logger.info('Moved: %s', old_path)
-			print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
-			print '  ' + Fore.CYAN + Style.BRIGHT  + 'Moved' + Fore.WHITE + ': ' + old_path[len(settings['remote_path'])+1:]
 			sync_logger.info('   to: %s', new_path)
-			print Fore.WHITE + Style.DIM +'            -      '+ Fore.CYAN + Style.BRIGHT +'to'+ Fore.WHITE +': ' + new_path[len(settings['remote_path'])+1:]
 		else:
-			print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
-			print 'warning: remote file ' + old_path + ' not found.'
+			print console('remote file not found', 'Warning', event)
 
 def move_directory(event, client, ssh):
 	old_path = filter_path(win_to_lin_path(event.src_path), filter_list)
@@ -185,28 +211,24 @@ def move_directory(event, client, ssh):
 
 	if settings['port'] == 22:
 		ssh.exec_command(cmd)
-
-	sync_logger.info('Moved: %s', old_path)
-	now = datetime.datetime.now()
-	print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
-	print '  ' + Fore.CYAN + Style.BRIGHT  + 'Moved' + Fore.WHITE + ': ' + old_path[len(settings['remote_path'])+1:]
-	sync_logger.info('   to: %s', new_path)
-	print Fore.WHITE + Style.DIM +'            -      '+ Fore.CYAN + Style.BRIGHT +'to'+ Fore.WHITE +': ' + new_path[len(settings['remote_path'])+1:]
+		sync_logger.info('Moved: %s', old_path)
+		sync_logger.info('   to: %s', new_path)
+		print console('', 'Moved', event)
 
 def delete_file(event, client, ssh):
 	old_file = win_to_lin_path(event.src_path)
 	if settings['port'] == 22:
 		if sftp_exists(client, old_file):
 			ssh.exec_command('rm -r "' + old_file + '"')
+			print console('', 'Deleted', event)
+			sync_logger.info('Deleted File: %s', old_file)
 		else:
+			print console('folder or file does not exist', 'Warning', event)
 			sync_logger.warning('Folder or file does not exist: %s', old_file)
 	else:
 		client.rmdir(old_file)
-
-	sync_logger.info('Deleted File: %s', old_file)
-	now = datetime.datetime.now()
-	print Fore.WHITE + Style.DIM + now.strftime("%I:%M.%S %p -") + Style.RESET_ALL,
-	print Fore.RED + Style.BRIGHT + 'Deleted' + Style.RESET_ALL + Fore.WHITE + Style.BRIGHT + ': ' + old_file[len(settings['remote_path'])+1:]	
+		print console('', 'Deleted', event)
+		sync_logger.info('Deleted File (FTP): %s', old_file)
 
 
 #class FileEventHandler(FileSystemEventHandler):
