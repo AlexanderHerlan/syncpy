@@ -8,7 +8,7 @@ This script is for web developers who would like to have "upload on save" file t
 Sync.py can also be secure if you are using the SSH/SFTP connection option, it will tunnel all of its traffic over an encrypted connection.  It also supports [OpenSSH](http://en.wikipedia.org/wiki/OpenSSH) key file and [SSH-agent](http://en.wikipedia.org/wiki/Ssh-agent) authentication so you never have to rely on inferior password based logins, or storing passwords in configuration files.
 
 NEW (11/21/2012):
-Sync.py now compiles your .scss (SASS) file to .css before upload!
+Sync.py now compiles your .scss (SASS) files to .css, as well as CoffeeScript files to javascript, all before uploading!
 
 
 System Requirements / Dependencies 
