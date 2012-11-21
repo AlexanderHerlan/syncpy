@@ -21,6 +21,7 @@ from watchdog.events import LoggingEventHandler
 from watchdog.events import FileSystemEventHandler
 from ftplib import FTP
 from scss import Scss
+import coffeescript
 
 # File names to ignore like temporary files forphotoshop saves or for ignoring GIT completely
 ignore_list = ['_tmp', '.git', '.tmp', '.crdownload']
@@ -116,8 +117,9 @@ def compile_file(compile_list, event):
 	for file_extention in compile_list:
 		if file_extention in file_path:
 			if file_extention == '.scss':
-
 				compile_scss(event)
+			elif file_extention == '.coffee':
+				compile_coffee(event)
 			else:
 				print console(file_extention + ' support coming soon...', 'Message', event)
 
@@ -139,6 +141,20 @@ def compile_scss(event):
 
 	css_file = open(compiled_path + compiled_file_name, 'w')
 	css_file.write(compiled_css)
+	css_file.close()
+
+def compile_coffee(event):
+	file_name = get_filename(event)
+
+	coffee_file = open(event.src_path, 'r').read()
+	compiled_js = coffeescript.compile(coffee_file)
+
+	compiled_path = event.src_path[:-len(file_name)]
+	compiled_file_name = file_name.split('.')
+	compiled_file_name = compiled_file_name[0] + '.js'
+
+	css_file = open(compiled_path + compiled_file_name, 'w')
+	css_file.write(compiled_js)
 	css_file.close()
 
 

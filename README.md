@@ -24,7 +24,8 @@ You can use a python package manager like easy_install, pip or distribute (excep
 * [ftputil](http://ftputil.sschwarzer.net/trac)
 * [watchdog](http://pypi.python.org/pypi/watchdog)
 * [colorama](http://pypi.python.org/pypi/colorama)
-* [pyScss](https://github.com/Kronuz/pyScss) Python SCSS (SASS) Compiler
+* [pyScss](https://github.com/Kronuz/pyScss) Python SCSS (SASS) Compiler (currently only .scss support, no .sass support)
+* [CoffeeScript](http://pypi.python.org/pypi/CoffeeScript) Python CoffeeScript Compiler
 
 Understanding the .config file
 ------------------------------
