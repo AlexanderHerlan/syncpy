@@ -7,6 +7,9 @@ This script is for web developers who would like to have "upload on save" file t
 
 Sync.py can also be secure if you are using the SSH/SFTP connection option, it will tunnel all of its traffic over an encrypted connection.  It also supports [OpenSSH](http://en.wikipedia.org/wiki/OpenSSH) key file and [SSH-agent](http://en.wikipedia.org/wiki/Ssh-agent) authentication so you never have to rely on inferior password based logins, or storing passwords in configuration files.
 
+NEW (11/21/2012):
+Sync.py now compiles your .scss (SASS) file to .css before upload!
+
 
 System Requirements / Dependencies 
 ------------
@@ -21,6 +24,7 @@ You can use a python package manager like easy_install, pip or distribute (excep
 * [ftputil](http://ftputil.sschwarzer.net/trac)
 * [watchdog](http://pypi.python.org/pypi/watchdog)
 * [colorama](http://pypi.python.org/pypi/colorama)
+* [pyScss](https://github.com/Kronuz/pyScss) Python SCSS (SASS) Compiler
 
 Understanding the .config file
 ------------------------------

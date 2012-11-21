@@ -20,11 +20,12 @@ from watchdog.observers import Observer
 from watchdog.events import LoggingEventHandler
 from watchdog.events import FileSystemEventHandler
 from ftplib import FTP
+from scss import Scss
 
 # File names to ignore like temporary files forphotoshop saves or for ignoring GIT completely
-ignore_list = ['_tmp', '.git', '.tmp']
-# strings to remove from file operations
-filter_list = ['.crdownload']
+ignore_list = ['_tmp', '.git', '.tmp', '.crdownload']
+
+compile_list = ['.scss', '.coffee']
 
 def console(message,  event = 'Message', event_object = ''):
 
@@ -39,7 +40,7 @@ def console(message,  event = 'Message', event_object = ''):
 		output = output + Fore.GREEN
 	elif event == 'Deleted' or event == 'Warning':
 		output = output + Fore.RED
-	elif event == 'Moved':
+	elif event == 'Moved' or event == 'Compile':
 		output = output + Fore.CYAN
 
 	# Special formatting for certain events
@@ -67,7 +68,6 @@ def console(message,  event = 'Message', event_object = ''):
 
 
 def win_to_lin_path(file_or_directory):
-	
 	if file_or_directory != "":
 		path = file_or_directory[len(settings['local_path']):]
 		path = path.replace("\\","/")
@@ -102,38 +102,71 @@ def sftp_is_file(ssh, path):
 	else:
 		return False
 
-def ignore_file(file_path, ignore_list):
-	"return 1 (true) if any of the ignore_list are in file_path"
-
+def get_filename(event):
+	file_path = event.src_path
 	file_path = file_path[len(settings['local_path'])+1:]
 	path_elements = file_path.split('\\')
+	file_name = path_elements[len(path_elements)-1]
+	return file_name
+
+def compile_file(compile_list, event):
+	file_path = event.src_path
+	file_name = get_filename(event)
+
+	for file_extention in compile_list:
+		if file_extention in file_path:
+			if file_extention == '.scss':
+				compile_scss(event)
+			else:
+				print console(file_extention + ' support coming soon...', 'Message', event)
+
+			print console('', 'Compile', event)
+
+			return 1
+	return 0
+
+def compile_scss(event):
+	css = Scss()
+	file_name = get_filename(event)
+
+	scss_file = open(event.src_path, 'r').read()
+	compiled_css = css.compile(scss_file)
+
+	compiled_path = event.src_path[:-len(file_name)]
+	compiled_file_name = file_name.split('.')
+	compiled_file_name = compiled_file_name[0] + '.css'
+
+	css_file = open(compiled_path + compiled_file_name, 'w')
+	css_file.write(compiled_css)
+	css_file.close()
+
+
+def ignore_file(ignore_list, event):
+	"return 1 (true) if any of the ignore_list are in file_path"
+	file_path = event.src_path
+	file_path = file_path[len(settings['local_path'])+1:]
+	path_elements = file_path.split('\\')
+	file_name = path_elements[len(path_elements)-1]
 
 	if file_path.find('\\') != -1:
 		if len(path_elements[len(path_elements)-1]) <= 4:
 			return 1
 
 	# ignore weird linux file saving BS from certain apps (like gedit)
-	file_name = path_elements[len(path_elements)-1]
+	
 	if file_name[:1] == '.':
 		return 1
 
-	for word in ignore_list:
-		if word in file_path:
-			#print now.strftime("%I:%M.%S %p -"),
-			#print 'Ignored: ' + text[len(local_path)+1:]
+	for file_name in ignore_list:
+		if file_name in file_path:
+			print console('', 'Ignored', event)
 			return 1
 	return 0
 
-def filter_path(path, filter):
-	for word in filter:
-		if path.endswith(word):
-			path = path[:-len(word)]
-	return path
-
 
 def create_file(event, client, ssh):
-	localpath = filter_path(event.src_path, filter_list)
-	remotepath = filter_path(win_to_lin_path(localpath), filter_list)
+	localpath = event.src_path
+	remotepath = win_to_lin_path(localpath)
 
 	# Wait some time before uploading the file because some 
 	# apps do weird stuff to files as they're being saved.
@@ -190,8 +223,8 @@ def update_file(event, client, ssh):
 
 
 def move_file(event, client, ssh):
-	old_path = filter_path(win_to_lin_path(event.src_path), filter_list)
-	new_path = filter_path(win_to_lin_path(event.dest_path), filter_list)
+	old_path = win_to_lin_path(event.src_path)
+	new_path = win_to_lin_path(event.dest_path)
 	cmd  = 'mv "' + old_path + '" "' + new_path + '"'
 	now = datetime.datetime.now()
 
@@ -205,8 +238,8 @@ def move_file(event, client, ssh):
 			print console('remote file not found', 'Warning', event)
 
 def move_directory(event, client, ssh):
-	old_path = filter_path(win_to_lin_path(event.src_path), filter_list)
-	new_path = filter_path(win_to_lin_path(event.dest_path), filter_list)
+	old_path = win_to_lin_path(event.src_path)
+	new_path = win_to_lin_path(event.dest_path)
 	cmd  = 'mv "' + old_path + '" "' + new_path + '"'
 
 	if settings['port'] == 22:
@@ -243,7 +276,7 @@ class FileEventHandler(FileSystemEventHandler):
 
 	def on_any_event(self, event):
 
-		if not ignore_file(event.src_path, ignore_list):
+		if not (ignore_file(ignore_list, event) or compile_file(compile_list, event)):
 
 			# Creating
 			if type(event) == watchdog.events.FileCreatedEvent:
