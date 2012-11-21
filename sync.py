@@ -119,6 +119,7 @@ def compile_file(compile_list, event):
 	file_path = event.src_path
 	file_name = get_filename(event)
 
+
 	for file_extention in compile_list:
 		if file_extention in file_path:
 			if file_extention == '.scss':
@@ -128,13 +129,11 @@ def compile_file(compile_list, event):
 			else:
 				print console(file_extention + ' support coming soon...', 'Message', event)
 
-			print console('', 'Compile', event)
-
 			return 1
 	return 0
 
 def compile_scss(event):
-	scss.LOAD_PATHS = COMPASS_LOAD_PATHS
+	scss.LOAD_PATHS = SCSS_LOAD_PATHS
 	_scss_vars = {}
 	_scss = scss.Scss(
 	    scss_vars=_scss_vars,
@@ -155,6 +154,8 @@ def compile_scss(event):
 	css_file = open(compiled_path + compiled_file_name, 'w')
 	css_file.write(compiled_css)
 	css_file.close()
+
+	print console('', 'Compile', event)
 
 def compile_coffee(event):
 	file_name = get_filename(event)
@@ -565,7 +566,7 @@ if __name__ == "__main__":
 
 	try:
 		while True:
-			time.sleep(1)
+			time.sleep(5)
 	except KeyboardInterrupt:
 		if settings['port'] == 22:
 			ssh_client.close()
