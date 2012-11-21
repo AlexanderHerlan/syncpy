@@ -20,13 +20,18 @@ from watchdog.observers import Observer
 from watchdog.events import LoggingEventHandler
 from watchdog.events import FileSystemEventHandler
 from ftplib import FTP
-from scss import Scss
+import scss
 import coffeescript
 
-# File names to ignore like temporary files forphotoshop saves or for ignoring GIT completely
-ignore_list = ['_tmp', '.git', '.tmp', '.crdownload']
-# list of file extentions to send to the compilation handler
-compile_list = ['.scss', '.coffee']
+# List of files and folders to ignore to prevent glitchy behavior from many program's save routines
+IGNORE_LIST = ['_tmp', '.git', '.tmp', '.crdownload']
+# List of file extentions supported by the compilation handler
+COMPILE_LIST = ['.scss', '.coffee']
+# The location of any CSS frameworks you wish to import to your .scss files via Sass imports.
+SCSS_LOAD_PATHS = [
+    'C:\\ruby187\\lib\\ruby\\gems\\1.8\\gems\\compass-0.12.2\\frameworks\\compass\\stylesheets\\',
+    'C:\\ruby187\\lib\\ruby\\gems\\1.8\\gems\\compass-0.12.2\\frameworks\\blueprint\\stylesheets\\',
+]
 
 def console(message,  event = 'Message', event_object = ''):
 
@@ -129,11 +134,19 @@ def compile_file(compile_list, event):
 	return 0
 
 def compile_scss(event):
-	css = Scss()
+	scss.LOAD_PATHS = COMPASS_LOAD_PATHS
+	_scss_vars = {}
+	_scss = scss.Scss(
+	    scss_vars=_scss_vars,
+	    scss_opts={
+	        'compress': False,
+	        'debug_info': False,
+	    }
+	)
 	file_name = get_filename(event)
 
 	scss_file = open(event.src_path, 'r').read()
-	compiled_css = css.compile(scss_file)
+	compiled_css = _scss.compile(scss_file)
 
 	compiled_path = event.src_path[:-len(file_name)]
 	compiled_file_name = file_name.split('.')
@@ -216,7 +229,6 @@ def create_directory(event, client, ssh):
 		sync_logger.info('Created Folder (FTP): %s', new_directory)
 
 
-
 def update_file(event, client, ssh):
 	localpath = event.src_path
 	remotepath = win_to_lin_path(event.src_path)
@@ -236,7 +248,6 @@ def update_file(event, client, ssh):
 			client.upload(localpath, remotepath)
 			print console('', 'Updated', event)
 			sync_logger.info('Updated (FTP): %s', remotepath)
-	
 
 
 def move_file(event, client, ssh):
@@ -254,6 +265,7 @@ def move_file(event, client, ssh):
 		else:
 			print console('remote file not found', 'Warning', event)
 
+
 def move_directory(event, client, ssh):
 	old_path = win_to_lin_path(event.src_path)
 	new_path = win_to_lin_path(event.dest_path)
@@ -264,6 +276,7 @@ def move_directory(event, client, ssh):
 		sync_logger.info('Moved: %s', old_path)
 		sync_logger.info('   to: %s', new_path)
 		print console('', 'Moved', event)
+
 
 def delete_file(event, client, ssh):
 	old_file = win_to_lin_path(event.src_path)
@@ -299,7 +312,7 @@ class FileEventHandler(FileSystemEventHandler):
 			#print 'DOESNT WORK ON WINDOWS SEE: https://github.com/gorakhargosh/watchdog/issues/92'
 			delete_file(event, self.sftp_client, self.ssh_client)
 		else:
-			if not (ignore_file(ignore_list, event) or compile_file(compile_list, event)):
+			if not (ignore_file(IGNORE_LIST, event) or compile_file(COMPILE_LIST, event)):
 
 				# Creating
 				if type(event) == watchdog.events.FileCreatedEvent:
@@ -321,12 +334,8 @@ class FileEventHandler(FileSystemEventHandler):
 				if type(event) == watchdog.events.DirMovedEvent:
 					move_directory(event, self.sftp_client, self.ssh_client)
 
-
-
-
 	def __del__(self):
 		self.sftp_client.close()
-
 
 def auth_user(ssh_client, username):
 
@@ -371,6 +380,7 @@ def auth_user(ssh_client, username):
 		sync_logger.info('Please properly configure your sync.py header variables and try again.')
 		return False
 
+
 def load_config(project):
 	if project in Config.sections():
 		dict1 = {}
@@ -404,6 +414,7 @@ def remote_file_exists(sftp, path, ssh):
 	else:
 		return True
 
+
 def remote_directory_exists(sftp, path, ssh):
 	cmd = 'test -d \''+path+'\' && echo "true" || echo "false"'
 	stdin, stdout, stderr = ssh.exec_command(cmd)
@@ -413,6 +424,7 @@ def remote_directory_exists(sftp, path, ssh):
 		return False
 	else:
 		return True
+
 
 def local_file_exists(PATH):
 	if os.path.exists(PATH) and os.path.isfile(PATH) and os.access(PATH, os.R_OK):
@@ -426,9 +438,7 @@ def local_file_exists(PATH):
 - Application entry point for sync.py
 -----------------------------------------------------------------------------------------------------------------------
 """
-
 seperator = Fore.GREEN + Style.DIM + '-------------------------------------------------------------------------------' + Fore.WHITE + Style.BRIGHT
-
 
 if __name__ == "__main__":
 
