@@ -24,7 +24,7 @@ from scss import Scss
 
 # File names to ignore like temporary files forphotoshop saves or for ignoring GIT completely
 ignore_list = ['_tmp', '.git', '.tmp', '.crdownload']
-
+# list of file extentions to send to the compilation handler
 compile_list = ['.scss', '.coffee']
 
 def console(message,  event = 'Message', event_object = ''):
@@ -116,6 +116,7 @@ def compile_file(compile_list, event):
 	for file_extention in compile_list:
 		if file_extention in file_path:
 			if file_extention == '.scss':
+
 				compile_scss(event)
 			else:
 				print console(file_extention + ' support coming soon...', 'Message', event)
@@ -275,35 +276,36 @@ class FileEventHandler(FileSystemEventHandler):
 			self.ftp_client = ftp_client
 
 	def on_any_event(self, event):
+		# Deleting
+		if type(event) == watchdog.events.FileDeletedEvent:
+			delete_file(event, self.sftp_client, self.ssh_client)
+		elif type(event) == watchdog.events.DirDeletedEvent:
+			#print 'DOESNT WORK ON WINDOWS SEE: https://github.com/gorakhargosh/watchdog/issues/92'
+			delete_file(event, self.sftp_client, self.ssh_client)
+		else:
+			if not (ignore_file(ignore_list, event) or compile_file(compile_list, event)):
 
-		if not (ignore_file(ignore_list, event) or compile_file(compile_list, event)):
+				# Creating
+				if type(event) == watchdog.events.FileCreatedEvent:
+					create_file(event, self.sftp_client, self.ssh_client)
 
-			# Creating
-			if type(event) == watchdog.events.FileCreatedEvent:
-				create_file(event, self.sftp_client, self.ssh_client)
+				if type(event) == watchdog.events.DirCreatedEvent:
+					create_directory(event, self.sftp_client, self.ssh_client)
 
-			if type(event) == watchdog.events.DirCreatedEvent:
-				create_directory(event, self.sftp_client, self.ssh_client)
+				# Updating
+				if type(event) == watchdog.events.FileModifiedEvent:
+					update_file(event, self.sftp_client, self.ssh_client)
 
-			# Updating
-			if type(event) == watchdog.events.FileModifiedEvent:
-				update_file(event, self.sftp_client, self.ssh_client)
+				#if type(event) == watchdog.events.DirModifiedEvent:
+					#print "DOESNT WORK ON WINDOWS SEE: https://github.com/gorakhargosh/watchdog/issues/92"  
 
-			#if type(event) == watchdog.events.DirModifiedEvent:
-				#print "DOESNT WORK ON WINDOWS SEE: https://github.com/gorakhargosh/watchdog/issues/92"  
+				# Moving / Renaming
+				if type(event) == watchdog.events.FileMovedEvent:
+					move_file(event, self.sftp_client, self.ssh_client)
+				if type(event) == watchdog.events.DirMovedEvent:
+					move_directory(event, self.sftp_client, self.ssh_client)
 
-			# Moving / Renaming
-			if type(event) == watchdog.events.FileMovedEvent:
-				move_file(event, self.sftp_client, self.ssh_client)
-			if type(event) == watchdog.events.DirMovedEvent:
-				move_directory(event, self.sftp_client, self.ssh_client)
 
-			# Deleting
-			if type(event) == watchdog.events.FileDeletedEvent:
-				delete_file(event, self.sftp_client, self.ssh_client)
-			if type(event) == watchdog.events.DirDeletedEvent:
-				#print 'DOESNT WORK ON WINDOWS SEE: https://github.com/gorakhargosh/watchdog/issues/92'
-				delete_file(event, self.sftp_client, self.ssh_client)
 
 
 	def __del__(self):
