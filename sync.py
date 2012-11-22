@@ -190,7 +190,7 @@ def ignore_file(ignore_list, event):
 
 	for file_name in ignore_list:
 		if file_name in file_path:
-			print console('', 'Ignored', event)
+			#print console('', 'Ignored', event)
 			return 1
 	return 0
 
@@ -308,10 +308,12 @@ class FileEventHandler(FileSystemEventHandler):
 	def on_any_event(self, event):
 		# Deleting
 		if type(event) == watchdog.events.FileDeletedEvent:
-			delete_file(event, self.sftp_client, self.ssh_client)
+			if not ignore_file(IGNORE_LIST, event):
+				delete_file(event, self.sftp_client, self.ssh_client)
 		elif type(event) == watchdog.events.DirDeletedEvent:
 			#print 'DOESNT WORK ON WINDOWS SEE: https://github.com/gorakhargosh/watchdog/issues/92'
-			delete_file(event, self.sftp_client, self.ssh_client)
+			if not ignore_file(IGNORE_LIST, event):
+				delete_file(event, self.sftp_client, self.ssh_client)
 		else:
 			if not (ignore_file(IGNORE_LIST, event) or compile_file(COMPILE_LIST, event)):
 
