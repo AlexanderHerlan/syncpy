@@ -11,7 +11,7 @@ Sync.py can also be secure if you are using the SSH/SFTP connection option, it w
 Sync.py now compiles your .scss (SASS) files to .css, as well as CoffeeScript files to javascript, all before uploading!
 
 **NEW (11/29/2012):**
-Added "live_url" setting to settings file.  SyncPy will now open a web browser for the current project that its syncing.  A chrome plugin is being refined to provide live-reload like instant-reloading
+Added "live_url" setting to settings file.  SyncPy will now open a web browser for the current project that its syncing.  A chrome plugin is being refined to provide live-reload like instant-reloading.  To install the chrome plug in, just drag and drop the pysync-chrome.crx file in this repository into the chrome://chrome/extensions/ page in the chrome browser.
 
 System Requirements / Dependencies 
 ------------
