@@ -22,6 +22,13 @@ from watchdog.events import FileSystemEventHandler
 from ftplib import FTP
 import scss
 import coffeescript
+import webbrowser
+
+from twisted.internet import reactor
+from twisted.python import log
+from twisted.web.server import Site
+from twisted.web.static import File
+from autobahn.websocket import WebSocketServerFactory, WebSocketServerProtocol, listenWS
 
 # List of files and folders to ignore to prevent glitchy behavior from many program's save routines
 IGNORE_LIST = ['_tmp', '.git', '.tmp', '.crdownload']
@@ -29,9 +36,91 @@ IGNORE_LIST = ['_tmp', '.git', '.tmp', '.crdownload']
 COMPILE_LIST = ['.scss', '.coffee']
 # The location of any CSS frameworks you wish to import to your .scss files via Sass imports.
 SCSS_LOAD_PATHS = [
-    'C:\\ruby187\\lib\\ruby\\gems\\1.8\\gems\\compass-0.12.2\\frameworks\\compass\\stylesheets\\',
-    'C:\\ruby187\\lib\\ruby\\gems\\1.8\\gems\\compass-0.12.2\\frameworks\\blueprint\\stylesheets\\',
+	'C:\\ruby187\\lib\\ruby\\gems\\1.8\\gems\\compass-0.12.2\\frameworks\\compass\\stylesheets\\',
+	'C:\\ruby187\\lib\\ruby\\gems\\1.8\\gems\\compass-0.12.2\\frameworks\\blueprint\\stylesheets\\',
 ]
+
+refresh = False
+
+
+class BroadcastServerProtocol(WebSocketServerProtocol):
+
+	def onOpen(self):
+		self.factory.register(self)
+
+	def onMessage(self, msg, binary):
+		if not binary:
+			print 'recieved message from client: ' + msg
+			#self.factory.broadcast(" '%s' from %s" % (msg, self.peerstr))
+			return True
+
+	def connectionLost(self, reason):
+		WebSocketServerProtocol.connectionLost(self, reason)
+		self.factory.unregister(self)
+
+
+class BroadcastServerFactory(WebSocketServerFactory):
+	"""
+	Simple broadcast server broadcasting any message it receives to all
+	currently connected clients.
+	"""
+
+	def __init__(self, url, debug = False, debugCodePaths = False):
+		WebSocketServerFactory.__init__(self, url, debug = debug, debugCodePaths = debugCodePaths)
+		self.clients = []
+		self.tickcount = 0
+		self.tick()
+
+	def tick(self):
+		global settings
+		global refresh
+		if refresh == True:
+			self.broadcast('{"refresh": "' + settings['live_url'] + '"}')
+			refresh = False
+
+		self.tickcount += 1
+		#self.broadcast("'refresh %d' from server" % self.tickcount)
+		reactor.callLater(1, self.tick)
+
+	def register(self, client):
+		if not client in self.clients:
+			#print console("Connected to web browser @ " + client.peerstr,  event = 'Message')
+			self.clients.append(client)
+
+	def unregister(self, client):
+		if client in self.clients:
+			#print "unregistered client " + client.peerstr
+			self.clients.remove(client)
+
+	def broadcast(self, msg):
+		for c in self.clients:
+			c.sendMessage(msg)
+			#print "message sent to " + c.peerstr
+
+
+
+def refresh_server():
+	debug = False
+
+	ServerFactory = BroadcastServerFactory
+	#ServerFactory = BroadcastPreparedServerFactory
+
+	factory = ServerFactory("ws://localhost:9000",
+						   debug = debug,
+						   debugCodePaths = debug)
+
+	factory.protocol = BroadcastServerProtocol
+	factory.setProtocolOptions(allowHixie76 = True)
+	listenWS(factory)
+
+	webdir = File(settings['local_path'])
+	web = Site(webdir)
+	reactor.listenTCP(8080, web)
+	webbrowser.open(settings['live_url'])
+	reactor.run()
+
+
+
 
 def console(message,  event = 'Message', event_object = ''):
 
@@ -49,26 +138,30 @@ def console(message,  event = 'Message', event_object = ''):
 	elif event == 'Moved' or event == 'Compile':
 		output = output + Fore.CYAN
 
-	# Special formatting for certain events
-	if event == 'Moved':
-		old_path = win_to_lin_path(event_object.src_path)
-		old_path = old_path[len(settings['remote_path'])+1:]
-		new_path = win_to_lin_path(event_object.dest_path)
-		new_path = new_path[len(settings['remote_path'])+1:]
+	if str(event_object) != '':
+		# Special formatting for certain events
+		if event == 'Moved':
+			old_path = win_to_lin_path(event_object.src_path)
+			old_path = old_path[len(settings['remote_path'])+1:]
+			new_path = win_to_lin_path(event_object.dest_path)
+			new_path = new_path[len(settings['remote_path'])+1:]
 
-		output = output + '  ' + event + Style.RESET_ALL + Fore.WHITE
+			output = output + '  ' + event + Style.RESET_ALL + Fore.WHITE
 
-		output = output + ": " + old_path + '\n' + '            -      ' + Fore.CYAN + Style.BRIGHT +'to'+ Fore.WHITE +': ' + new_path + Style.RESET_ALL
-	else:
-		remotepath = win_to_lin_path(event_object.src_path)
-		remotepath = remotepath[len(settings['remote_path'])+1:]
-
-		output = output + event + Style.RESET_ALL + Style.DIM + Fore.WHITE
-
-		if message == '':
-			output = output + ': ' + Style.BRIGHT + remotepath + Style.DIM
+			output = output + ": " + old_path + '\n' + '            -      ' + Fore.CYAN + Style.BRIGHT +'to'+ Fore.WHITE +': ' + new_path + Style.RESET_ALL
 		else:
-			output = output + ': ' + Style.BRIGHT + remotepath + Style.DIM + ' ' + message
+			remotepath = win_to_lin_path(event_object.src_path)
+			remotepath = remotepath[len(settings['remote_path'])+1:]
+
+			output = output + event + Style.RESET_ALL + Style.DIM + Fore.WHITE
+
+			if message == '':
+				output = output + ': ' + Style.BRIGHT + remotepath + Style.DIM
+			else:
+				output = output + ': ' + Style.BRIGHT + remotepath + Style.DIM + ' ' + message
+	else:
+		output = output + event + Style.RESET_ALL + Style.DIM + Fore.WHITE
+		output = output + ': ' + Style.BRIGHT + message + Style.DIM
 
 	return output
 
@@ -136,11 +229,11 @@ def compile_scss(event):
 	scss.LOAD_PATHS = SCSS_LOAD_PATHS
 	_scss_vars = {}
 	_scss = scss.Scss(
-	    scss_vars=_scss_vars,
-	    scss_opts={
-	        'compress': False,
-	        'debug_info': False,
-	    }
+		scss_vars=_scss_vars,
+		scss_opts={
+			'compress': False,
+			'debug_info': False,
+		}
 	)
 	file_name = get_filename(event)
 
@@ -297,6 +390,7 @@ def delete_file(event, client, ssh):
 
 #class FileEventHandler(FileSystemEventHandler):
 class FileEventHandler(FileSystemEventHandler):
+	needs_refresh = False
 	
 	def __init__(self, ssh_client=None, ftp_client=None):
 		if ssh_client is not None:
@@ -306,6 +400,8 @@ class FileEventHandler(FileSystemEventHandler):
 			self.ftp_client = ftp_client
 
 	def on_any_event(self, event):
+		global refresh
+
 		# Deleting
 		if type(event) == watchdog.events.FileDeletedEvent:
 			if not ignore_file(IGNORE_LIST, event):
@@ -320,6 +416,7 @@ class FileEventHandler(FileSystemEventHandler):
 				# Creating
 				if type(event) == watchdog.events.FileCreatedEvent:
 					create_file(event, self.sftp_client, self.ssh_client)
+					refresh = True
 
 				if type(event) == watchdog.events.DirCreatedEvent:
 					create_directory(event, self.sftp_client, self.ssh_client)
@@ -327,6 +424,7 @@ class FileEventHandler(FileSystemEventHandler):
 				# Updating
 				if type(event) == watchdog.events.FileModifiedEvent:
 					update_file(event, self.sftp_client, self.ssh_client)
+					refresh = True
 
 				#if type(event) == watchdog.events.DirModifiedEvent:
 					#print "DOESNT WORK ON WINDOWS SEE: https://github.com/gorakhargosh/watchdog/issues/92"  
@@ -524,7 +622,6 @@ if __name__ == "__main__":
 		print seperator
 		sys.exit()
 
-
 	print seperator
 
 	# if SSH File transfer
@@ -565,7 +662,7 @@ if __name__ == "__main__":
 			print now.strftime("\nNow syncing - %m/%d/%Y %I:%M %p %Ss - ") + Fore.RED + Style.BRIGHT + "CTRL+C to exit."
 			print seperator
 
-
+	refresh_server()
 	try:
 		while True:
 			time.sleep(5)

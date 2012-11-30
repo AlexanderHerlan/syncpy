@@ -1,4 +1,5 @@
 [MyProject1]
+live_url      = http://dev.MyProject1.com/
 local_path    = C:\dev\MyProject1
 remote_path   = /var/www/MyProject1
 host          = 69.56.122.18
@@ -8,6 +9,7 @@ private_key   =
 password      = 
 
 [MyProject2]
+live_url      = http://www.MyProject2.com/
 local_path    = C:\dev\MyProject2
 remote_path   = /var/www/MyProject2
 host          = 10.0.0.18
@@ -17,6 +19,7 @@ private_key   = C:/user/yourname/documents/my-private-key.ppk
 password      = 
 
 [MyOtherProjectLOL]
+live_url      = http://www.MyOtherProject.com/dev/
 local_path    = C:\dev\MyOtherProject
 remote_path   = /home/orbitrix/www/snakebyte.net/MyOtherProjectLOL
 host          = snakebyte.net

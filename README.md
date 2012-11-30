@@ -7,9 +7,11 @@ This script is for web developers who would like to have "upload on save" file t
 
 Sync.py can also be secure if you are using the SSH/SFTP connection option, it will tunnel all of its traffic over an encrypted connection.  It also supports [OpenSSH](http://en.wikipedia.org/wiki/OpenSSH) key file and [SSH-agent](http://en.wikipedia.org/wiki/Ssh-agent) authentication so you never have to rely on inferior password based logins, or storing passwords in configuration files.
 
-NEW (11/21/2012):
+**NEW (11/21/2012):**
 Sync.py now compiles your .scss (SASS) files to .css, as well as CoffeeScript files to javascript, all before uploading!
 
+**NEW (11/29/2012):**
+Added "live_url" setting to settings file.  SyncPy will now open a web browser for the current project that its syncing.  A chrome plugin is being refined to provide live-reload like instant-reloading
 
 System Requirements / Dependencies 
 ------------
@@ -38,6 +40,7 @@ There should be settings for 3 example projects in the provided [sync.config.exa
 An example of one project should look as follows:
 
 	[MyProject2]
+	live_url      = http://www.MyProject2.com/
 	local_path    = C:\dev\MyProject2
 	remote_path   = /var/www/MyProject2
 	host          = 10.0.0.18
@@ -54,8 +57,9 @@ You only need 1 project minimum in your sync.config file for sync.py to work, bu
 Breaking down the .config settings
 -----------------------------------
 
-The **local_path** setting should be set to your working directory for the project on your local system.  This will be the folder that is pushed to the server any time a change is detected inside of it.
+Th **live_url** is the webserver where you can reach the contents of **remote_path**
 
+The **local_path** setting should be set to your working directory for the project on your local system.  This will be the folder that is pushed to the server any time a change is detected inside of it.
 
 The **remote_path** is the folder on your Linux web server that you want to push files to from the **local_path**.
 
