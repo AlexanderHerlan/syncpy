@@ -28,6 +28,8 @@ You can use a python package manager like easy_install, pip or distribute (excep
 * [colorama](http://pypi.python.org/pypi/colorama)
 * [pyScss](https://github.com/Kronuz/pyScss) Python SCSS (SASS) Compiler (currently only .scss support, no .sass support)
 * [CoffeeScript](http://pypi.python.org/pypi/CoffeeScript) Python CoffeeScript Compiler
+* [Twisted](http://pypi.python.org/pypi/Twisted)
+* [autobahn](http://pypi.python.org/pypi/autobahn/0.5.9)
 
 Understanding the .config file
 ------------------------------
@@ -57,7 +59,7 @@ You only need 1 project minimum in your sync.config file for sync.py to work, bu
 Breaking down the .config settings
 -----------------------------------
 
-Th **live_url** is the webserver where you can reach the contents of **remote_path**
+The **live_url** setting is the webserver where you can reach the contents of **remote_path**
 
 The **local_path** setting should be set to your working directory for the project on your local system.  This will be the folder that is pushed to the server any time a change is detected inside of it.
 
