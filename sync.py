@@ -55,7 +55,7 @@ class BroadcastServerProtocol(WebSocketServerProtocol):
 			data = json.loads(msg)
 			for key in data.iterkeys():
 				if key == "handshake":
-					if data[key] == settings['live_url']:
+					if data[key][:len(settings['live_url'])] == settings['live_url']:
 						self.factory.broadcast('{"handshake":"true"}')
 					else:
 						self.factory.broadcast('{"handshake":"false"}')
