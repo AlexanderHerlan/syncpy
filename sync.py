@@ -14,6 +14,7 @@ import ConfigParser
 import watchdog
 import paramiko
 import ftputil
+import json
 from colorama import init as color_init
 from colorama import Fore, Back, Style
 from watchdog.observers import Observer
@@ -49,9 +50,15 @@ class BroadcastServerProtocol(WebSocketServerProtocol):
 		self.factory.register(self)
 
 	def onMessage(self, msg, binary):
+		global settings
 		if not binary:
-			print 'recieved message from client: ' + msg
-			#self.factory.broadcast(" '%s' from %s" % (msg, self.peerstr))
+			data = json.loads(msg)
+			for key in data.iterkeys():
+				if key == "handshake":
+					if data[key] == settings['live_url']:
+						self.factory.broadcast('{"handshake":"true"}')
+					else:
+						self.factory.broadcast('{"handshake":"false"}')
 			return True
 
 	def connectionLost(self, reason):
@@ -64,7 +71,6 @@ class BroadcastServerFactory(WebSocketServerFactory):
 	Simple broadcast server broadcasting any message it receives to all
 	currently connected clients.
 	"""
-
 	def __init__(self, url, debug = False, debugCodePaths = False):
 		WebSocketServerFactory.__init__(self, url, debug = debug, debugCodePaths = debugCodePaths)
 		self.clients = []
@@ -80,7 +86,7 @@ class BroadcastServerFactory(WebSocketServerFactory):
 
 		self.tickcount += 1
 		#self.broadcast("'refresh %d' from server" % self.tickcount)
-		reactor.callLater(1, self.tick)
+		reactor.callLater(0.5, self.tick)
 
 	def register(self, client):
 		if not client in self.clients:
@@ -641,7 +647,7 @@ if __name__ == "__main__":
 			observer.start()
 			sync_logger.info('Watching ' + settings['local_path'])
 			now = datetime.datetime.now()
-			print "\n" + Fore.GREEN + "Now syncing" + Fore.WHITE + now.strftime(" - %m/%d/%Y %I:%M %p %Ss - ") + Fore.RED + Style.BRIGHT + "CTRL+C to exit."
+			print "\n" + Fore.GREEN + "Now syncing" + Fore.WHITE + now.strftime(" - %m/%d/%Y %I:%M %p %Ss - ") + Fore.RED + Style.BRIGHT + "CTRL+C twice to exit."
 			print seperator
 		else:
 			sys.exit()
@@ -665,7 +671,7 @@ if __name__ == "__main__":
 	refresh_server()
 	try:
 		while True:
-			time.sleep(5)
+			time.sleep(1)
 	except KeyboardInterrupt:
 		if settings['port'] == 22:
 			ssh_client.close()
