@@ -38,7 +38,7 @@ COMPILE_LIST = ['.scss', '.coffee']
 # The location of any CSS frameworks you wish to import to your .scss files via Sass imports.
 SCSS_LOAD_PATHS = [
 	'C:\\ruby187\\lib\\ruby\\gems\\1.8\\gems\\compass-0.12.2\\frameworks\\compass\\stylesheets\\',
-	'C:\\ruby187\\lib\\ruby\\gems\\1.8\\gems\\compass-0.12.2\\frameworks\\blueprint\\stylesheets\\',
+	'C:\\ruby187\\lib\\ruby\\gems\\1.8\\gems\\compass-0.12.2\\frameworks\\blueprint\\stylesheets\\'
 ]
 
 refresh = False

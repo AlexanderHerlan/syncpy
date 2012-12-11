@@ -1,6 +1,8 @@
 Sync.py
 =======
 
+![Preview of SyncPy](https://www.snakebyte.net/pysync/preview.png "SyncPy Preview")
+
 Who is this script for and what is it all about?
 ------------------------------------------------
 This script is for web developers who would like to have "upload on save" file transport functionality from **any** program on their local computer, straight to any web development server with FTP or SFTP/SSH support.  This script provides a convenient way to do fast paced iterative based testing and development on a live remote server, or just for making quick edits to a live website.  Sync.py intends to be a superior replacement for Adobe Dreamweaver's Upload on Save FTP functionality, that works with any application/filetype and stays out of your way.  Sync.py watches your file system for **any changes** from **any application** and **automatically uploads** the changes to the remote machine of your choosing, 100% in the background and out of your way.
