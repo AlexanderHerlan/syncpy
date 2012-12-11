@@ -1,7 +1,7 @@
 Sync.py
 =======
 
-![Preview of SyncPy](https://www.snakebyte.net/pysync/preview.png "SyncPy Preview")
+![Preview of SyncPy](https://www.snakebyte.net/pysync/preview2.png "SyncPy Preview")
 
 Who is this script for and what is it all about?
 ------------------------------------------------
