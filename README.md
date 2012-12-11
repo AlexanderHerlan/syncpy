@@ -11,7 +11,7 @@ How Does It Work?
 -----------------------
 Once configured through its configuration file, Sync.py watches a folder of your choosing for **any changes** from **any application** and checks to see if the file needs processing (such as a [Sass SCSS file](http://sass-lang.com/) or [CoffeeScript file](http://coffeescript.org/) that needs compilation) then **automatically processes and uploads** the changes to a remote machine that you configure.  All 100% in the background and out of your way.
 
-After the file has been uploaded, the option SyncPy-Chrome plugin can be installed in Google Chrome for automatic page refreshing after changes have been made that are detected by SyncPy.   This means you can see the live results of an edit from any editor, presented to you automatically on save in a real browser window. 
+After the file has been uploaded, the optional SyncPy-Chrome plugin can be installed in Google Chrome for automatic page refreshing after changes have been made that are detected by SyncPy.   This means you can see the live results of an edit from any editor, presented to you automatically "on save" in a real live browser window. 
 
 Sync.py can also be very secure if you are using the SSH/SFTP connection option, it will tunnel all of its traffic over an encrypted connection.  It also supports [OpenSSH](http://en.wikipedia.org/wiki/OpenSSH) key files and [SSH-agent](http://en.wikipedia.org/wiki/Ssh-agent) authentication so you never have to rely on inferior password based logins, or storing passwords in configuration files.
 
