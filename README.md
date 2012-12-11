@@ -3,14 +3,18 @@ Sync.py
 
 ![Preview of SyncPy](https://www.snakebyte.net/pysync/preview2.png "SyncPy Preview")
 
-Who is this script for and what is it all about?
-------------------------------------------------
-This script is for web developers who would like to have "upload on save" file transport functionality from **any** program on their local computer, straight to any web development server with FTP or SFTP/SSH support.  This script provides a convenient way to do fast paced iterative based testing and development on a live remote server, or just for making quick edits to a live website.  Sync.py intends to be a superior replacement for Adobe Dreamweaver's Upload on Save FTP functionality, that works with any application/filetype and stays out of your way.  Sync.py watches your file system for **any changes** from **any application** and **automatically uploads** the changes to the remote machine of your choosing, 100% in the background and out of your way.
+Who is this script for?
+-----------------------
+This script is for web developers who would like to have "upload on save" file transport functionality from **any** program on their local computer, straight to any web development platform with FTP or SFTP/SSH support.  This script provides a convenient way to do fast iterative testing and development on a live remote server, or just for making quick edits to remote files.  Sync.py intends to be a superior replacement to the functionality that is usually built into programs such as Adobe Dreamweaver's "Upload on Save" FTP functionality.  However SynPy isn't built into any single app, and will work with any application or file type you can throw at it, on any platform.  As a bonus, SyncPy also compiles Sass and Coffeescript files on the fly for deployment on your server, so you don't even have to think about it. 
 
-Sync.py can also be secure if you are using the SSH/SFTP connection option, it will tunnel all of its traffic over an encrypted connection.  It also supports [OpenSSH](http://en.wikipedia.org/wiki/OpenSSH) key file and [SSH-agent](http://en.wikipedia.org/wiki/Ssh-agent) authentication so you never have to rely on inferior password based logins, or storing passwords in configuration files.
+How Does It Work?
+-----------------------
+Once configured through its configuration file, Sync.py watches a folder of your choosing for **any changes** from **any application** and checks to see if the file needs processing (such as a Sass SCSS file or CoffeeScript file that needs compilation) then **automatically processes and uploads** the changes to a remote machine that you configure.  All 100% in the background and out of your way.
 
-**NEW (11/21/2012):**
-Sync.py now compiles your .scss (SASS) files to .css, as well as CoffeeScript files to javascript, all before uploading!
+After the file has been uploaded, the option SyncPy-Chrome plugin can be installed in Google Chrome for automatic page refreshing after changes have been made that are detected by SyncPy.   This means you can see the live results of an edit from any editor, presented to you automatically on save in a real browser window. 
+
+Sync.py can also be very secure if you are using the SSH/SFTP connection option, it will tunnel all of its traffic over an encrypted connection.  It also supports [OpenSSH](http://en.wikipedia.org/wiki/OpenSSH) key files and [SSH-agent](http://en.wikipedia.org/wiki/Ssh-agent) authentication so you never have to rely on inferior password based logins, or storing passwords in configuration files.
+
 
 **NEW (11/29/2012):**
 Added "live_url" setting to settings file.  SyncPy will now open a web browser for the current project that its syncing.  A chrome plugin is being refined to provide live-reload like instant-reloading.  To install the chrome plug in, just drag and drop the pysync-chrome.crx file in this repository into the chrome://chrome/extensions/ page in the chrome browser.
