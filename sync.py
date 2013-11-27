@@ -32,9 +32,9 @@ from twisted.web.static import File
 from autobahn.websocket import WebSocketServerFactory, WebSocketServerProtocol, listenWS
 
 # List of files and folders to ignore to prevent glitchy behavior from many program's save routines
-IGNORE_LIST = ['_tmp', '.git', '.tmp', '.crdownload']
+IGNORE_LIST = ['_tmp', '.git', '.tmp', '.TMP', '.crdownload']
 # List of file extentions supported by the compilation handler
-COMPILE_LIST = ['.scss', '.coffee']
+COMPILE_LIST = ['.xxxscss', '.coffee']
 # The location of any CSS frameworks you wish to import to your .scss files via Sass imports.
 SCSS_LOAD_PATHS = [
 	'C:\\ruby187\\lib\\ruby\\gems\\1.8\\gems\\compass-0.12.2\\frameworks\\compass\\stylesheets\\',
